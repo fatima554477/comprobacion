@@ -220,7 +220,7 @@ if($action == "ajax"){
 
     thead tr:nth-child(2) td {
         position: sticky;
-        top: 70px; /* Altura del primer encabezado */
+        top: 60px; /* Altura del primer encabezado */
         background: #e2f2f2;
         z-index: 9;
     }
@@ -232,11 +232,12 @@ if($action == "ajax"){
 <th style="background:#c9e8e8"></th>
 <th style="background:#c9e8e8">#</th>
 <th style="background:#c9e8e8">SOLICITANTE</th>
-<th style="background:#c9e8e8">VENTAS</th><!-NUEVO VENTAS->
-<th style="background:#c9e8e8">CUENTAS <br>POR PAGAR</th><!-AUDITORIA 1->
+
+<th style="background:#c9e8e8;text-align:center">VENTAS Y<br> OPERACIONES</th><!-AUDITORIA 1->
 <th style="background:#c9e8e8">DIRECCIÓN </th><!-antes finanzas y tesoreria->
-<th style="background:#c9e8e8">FINANZAS Y <br>TESORERÍA <br>(PAGADO)</th><!-antes pagado->
+
 <th style="background:#c9e8e8">AUDITORÍA</th>
+<th style="background:#c9e8e8">CONTABILIDAD</th>
 
 
 
@@ -526,7 +527,7 @@ if($database->plantilla_filtro($nombreTabla,"TOTAL_IMPUESTOS_RETENIDOS",$altaeve
 <td style="background:#c9e8e8"></td>
 <td style="background:#c9e8e8"></td>
 <td style="background:#c9e8e8"></td>
-<td style="background:#c9e8e8"></td>
+
 
 <?php  
 if($database->plantilla_filtro($nombreTabla,"FECHA_DE_LLENADO",$altaeventos,$DEPARTAMENTO)=="si"){ ?><td style="background:#c9e8e8"><input type="text" class="form-control" id="FECHA_DE_LLENADO_1" value="<?php 
@@ -1055,31 +1056,7 @@ $colspan += 1; ?>/>
 
 </td>
 
-<td style="text-align:center; background:
-    <?php
-    if ($row["STATUS_DE_PAGO"] == 'APROBADO') {
-        echo '#ceffcc'; // verde claro para aprobado
-    } elseif ($row["STATUS_DE_PAGO"] == 'PAGADO') {
-        echo '#ceffcc'; // verde más intenso para pagado
-    } else {
-        echo '#e9d8ee'; // lila claro para pendiente
-    }
-    ?>" 
-    id="color_pagado1a<?php echo $row["07COMPROBACIONid"]; ?>">
 
-    <input type="checkbox" style="width:30PX;" class="form-check-input" 
-           id="STATUS_AUDITORIA1<?php echo $row["07COMPROBACIONid"]; ?>" 
-           name="STATUS_AUDITORIA1<?php echo $row["07COMPROBACIONid"]; ?>" 
-           value="<?php echo $row["07COMPROBACIONid"]; ?>"  
-           <?php 
-           if ($row["STATUS_DE_PAGO"] == 'APROBADO' || $row["STATUS_DE_PAGO"] == 'PAGADO'): 
-               echo 'checked disabled';
-           else: 
-               echo 'onclick="STATUS_AUDITORIA1('.$row["07COMPROBACIONid"].')"';
-           endif; 
-           ?>
-    />
-</td>
 
 
 
@@ -1092,14 +1069,7 @@ $colspan += 1; ?>/>
 
 </td>
 
-<td style="text-align:center; background:<?php if($row["STATUS_DE_PAGO"]!='PAGADO'){?> #e9d8ee;<?php }else{?> #ceffcc; <?php }?>" id="color_pagado1a<?php echo $row["07COMPROBACIONid"]; ?>" >
 
-<input type="checkbox" style="width:30PX;" class="form-check-input" id="pasarpagado1a<?php echo $row["07COMPROBACIONid"]; ?>" name="pasarpagado1a<?php echo $row["07COMPROBACIONid"]; ?>" value="<?php echo $row["07COMPROBACIONid"]; ?>"  onclick="pasarpagado2(<?php echo $row["07COMPROBACIONid"]; ?>)"  <?php if($row["STATUS_DE_PAGO"]=='PAGADO'){
-	echo "checked";
-}$colspan += 1;
- ?>/>
-
-</td>
 <td style="text-align:center; background:<?php if($row["STATUS_AUDITORIA2"]=='si'){?>  #ceffcc; <?php }else{?> #e9d8ee; <?php }?>" id="color_AUDITORIA2<?php echo $row["07COMPROBACIONid"]; ?>" >
 <input type="checkbox" style="width:30PX;" class="form-check-input" id="STATUS_AUDITORIA2<?php echo $row["07COMPROBACIONid"]; ?>"  name="STATUS_AUDITORIA2<?php echo $row["07COMPROBACIONid"]; ?>" value="<?php echo $row["07COMPROBACIONid"]; ?>" onclick="STATUS_AUDITORIA2(<?php echo $row["07COMPROBACIONid"]; ?>)" <?php if($row["STATUS_AUDITORIA2"]=='si'){
 	echo "checked";
@@ -1108,7 +1078,14 @@ $colspan += 1; ?>/>
 
 </td>
 
+</td>
+<td style="text-align:center; background:<?php if($row["STATUS_AUDITORIA3"]=='si'){?>  #ceffcc; <?php }else{?> #e9d8ee; <?php }?>" id="color_AUDITORIA3<?php echo $row["07COMPROBACIONid"]; ?>" >
+<input type="checkbox" style="width:30PX;" class="form-check-input" id="STATUS_AUDITORIA3<?php echo $row["07COMPROBACIONid"]; ?>"  name="STATUS_AUDITORIA3<?php echo $row["07COMPROBACIONid"]; ?>" value="<?php echo $row["07COMPROBACIONid"]; ?>" onclick="STATUS_AUDITORIA3(<?php echo $row["07COMPROBACIONid"]; ?>)" <?php if($row["STATUS_AUDITORIA3"]=='si'){
+	echo "checked";
+}$colspan += 1;
+ ?>/>
 
+</td>
 <?php  if($database->plantilla_filtro($nombreTabla,"FECHA_DE_LLENADO",$altaeventos,$DEPARTAMENTO)=="si"){ $colspan += 1; ?><td style="text-align:center"><?php echo $row['FECHA_DE_LLENADO'];?></td>
 <?php } ?>
 <?php  if($database->plantilla_filtro($nombreTabla,"ADJUNTAR_FACTURA_XML",$altaeventos,$DEPARTAMENTO)=="si"){ $colspan += 1; ?><td style="text-align:center"><?php echo $ADJUNTAR_FACTURA_XML; ?></td>
@@ -1238,7 +1215,8 @@ echo  number_format($row['MONTO_DEPOSITAR'],2,'.',',');
                          </td>
 
 
-<td><input type="checkbox" style="width:30%;color:red" class="form-check-input" <?php echo $database->validaexistematch2COMPROBACIONtodos($row["07COMPROBACIONid"],'TARJETABBVA'); ?> disabled /></td>
+<td><input type="checkbox" style="width:30%;color:red" class="form-check-input" <?php echo $database->validaexistematch2COMPROBACIONtodos($row["07COMPROBACIONid"],'TARJETABBVA'); ?> disabled />
+<?php echo $database->tarjetaComprobacion($row["07COMPROBACIONid"]); ?></td>
 <?php $colspan2 += 1; $colspan2 += 1; } ?>
 
 

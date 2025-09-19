@@ -268,7 +268,37 @@ function recalcularTotal() {
 	});
 }
 
+	function STATUS_AUDITORIA3(AUDITORIA3_id){
+	
 
+	var checkBox = document.getElementById("STATUS_AUDITORIA3"+AUDITORIA3_id);
+	var AUDITORIA3_text = "";
+	if (checkBox.checked == true){
+	AUDITORIA3_text = "si";
+	}else{
+	AUDITORIA3_text = "no";
+	}
+	  $.ajax({
+		url:'comprobaciones/controladorPP.php',
+		method:'POST',
+		data:{AUDITORIA3_id:AUDITORIA3_id,AUDITORIA3_text:AUDITORIA3_text},
+		beforeSend:function(){
+		$('#pasarpagado2').html('cargando');
+	},
+		success:function(data){
+		var result = data.split('^');				
+		$('#pasarpagado2').html("Cargando...").fadeIn().delay(500).fadeOut();
+
+		if(result[1]=='si'){
+		$('#color_AUDITORIA3'+AUDITORIA3_id).css('background-color', '#ceffcc');
+		}
+		if(result[1]=='no'){
+		$('#color_AUDITORIA3'+AUDITORIA3_id).css('background-color', '#e9d8ee');
+		}		
+		
+	}
+	});
+}
 
 	function STATUS_FINANZAS(FINANZAS_id){
 
@@ -334,10 +364,18 @@ function recalcularTotal() {
 	});
 }
 
-	$(function() {
-		
-		load(1);
-	});
+        $(function() {
+                const triggerSearch = () => load(1);
+
+                $('#target3').on('keydown', 'thead input, thead select', function(event) {
+                        if (event.key === 'Enter' || event.which === 13) {
+                                event.preventDefault();
+                                triggerSearch();
+                        }
+                });
+
+                load(1);
+        });
 
 	function load(page){
 		var getVal = id => $("#" + id).val();

@@ -60,12 +60,42 @@ define("__ROOT1__", dirname(dirname(__FILE__)));
 			$preguntaQ3 = mysqli_query($conn,$pregunta3) or die('P1533'.mysqli_error($conn));
 			$ROWP3 = MYSQLI_FETCH_ARRAY($preguntaQ3, MYSQLI_ASSOC);
 			
-			if($ROWP1['id']==0 and $ROWP2['id']==0 and $ROWP3['id']==0){
-			return '';
-			}else{
-			return 'checked';				
-			}
-	}
+                if($ROWP1['id']==0 and $ROWP2['id']==0 and $ROWP3['id']==0){
+                return '';
+                }else{
+                return 'checked';
+                }
+        }
+
+       public function tarjetaComprobacion($IpMATCHDOCUMENTOS2){
+               $conn = $this->db();
+               $pregunta = 'select tarjeta from 12matchDocumentos where
+               estatus = "si" and documentoConFactura="'.$IpMATCHDOCUMENTOS2.'"';
+               $preguntaQ = mysqli_query($conn,$pregunta) or die('P1533'.mysqli_error($conn));
+               $tarjetas = array();
+               while($ROWP = MYSQLI_FETCH_ARRAY($preguntaQ, MYSQLI_ASSOC)){
+                       $tarjetas[] = $this->nombreTarjeta($ROWP['tarjeta']);
+               }
+               if(count($tarjetas) == 0){
+                       return '';
+               }else{
+                       return implode(', ', $tarjetas);
+               }
+       }
+
+       private function nombreTarjeta($tarjeta){
+               $map = array(
+                       'AMERICANE' => 'AMERICAN EXPRESS',
+                       'INBURSA' => 'INBURSA',
+                       'TARJETABBVA' => 'BBVA'
+               );
+               $tarjetaUpper = strtoupper($tarjeta);
+               if(isset($map[$tarjetaUpper])){
+                       return $map[$tarjetaUpper];
+               }
+               return $tarjetaUpper;
+       }
+	
 	
 	public function countAll($sql){
 		$query=$this->mysqli->query($sql);
