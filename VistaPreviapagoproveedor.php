@@ -620,7 +620,7 @@ if($row["FECHA_DE_LLENADO"]==''){
 <td width="30%"><label>ADJUNTAR CANCELACIONES (FORMATO XML)</label></td>
 <td width="70%">	<div id="drop_file_zone" ondrop="upload_file2(event,\'CANCELACIONES_XML\')" ondragover="return false" style="width:300px;">
 <p>Suelta aquí o busca tu archivo</p>
-<p><input class="form-control form-control-sm" id="CANCELACIONES_XML" type="text" onkeydown="return false" onclick="file_explorer2(\'CANCELACIONES_XML\');" style="width:250px;" VALUE="'.$row["CANCELACIONES_XML"] .' " required /></p>
+<p><input class="form-control form-control-sm" id="CANCELACIONES_XML" type="text" onkeydown="return false" onclick="file_explorer2(\'CANCELACIONES_XML\');" style="width:250px;" VALUE="'.$row["CANCELACIONES_XML"] .' " /></p>
 <input type="file" name="CANCELACIONES_XML" id="nono"/>
 <div id="3CANCELACIONES_XML">
 '.$CANCELACIONES_XML.'</td>
@@ -640,7 +640,7 @@ if($row["FECHA_DE_LLENADO"]==''){
 <td width="30%"><label>ADJUNTAR FACTURA DE COMISIÓN DESCONTADA:(FORMATO XML)</label></td>
 <td width="70%">	<div id="drop_file_zone" ondrop="upload_file2(event,\'ADJUNTAR_FACTURA_DE_COMISION_XML\')" ondragover="return false" style="width:300px;">
 <p>Suelta aquí o busca tu archivo</p>
-<p><input class="form-control form-control-sm" id="ADJUNTAR_FACTURA_DE_COMISION_XML" type="text" onkeydown="return false" onclick="file_explorer2(\'ADJUNTAR_FACTURA_DE_COMISION_XML\');" style="width:250px;" VALUE="'.$row["ADJUNTAR_FACTURA_DE_COMISION_XML"] .' " required /></p>
+<p><input class="form-control form-control-sm" id="ADJUNTAR_FACTURA_DE_COMISION_XML" type="text" onkeydown="return false" onclick="file_explorer2(\'ADJUNTAR_FACTURA_DE_COMISION_XML\');" style="width:250px;" VALUE="'.$row["ADJUNTAR_FACTURA_DE_COMISION_XML"] .' " /></p>
 <input type="file" name="ADJUNTAR_FACTURA_DE_COMISION_XML" id="nono"/>
 <div id="3ADJUNTAR_FACTURA_DE_COMISION_XML">
 '.$ADJUNTAR_FACTURA_DE_COMISION_XML.'</td>
