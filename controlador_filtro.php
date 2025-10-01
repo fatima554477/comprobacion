@@ -1641,7 +1641,7 @@ $totales2 = 'si';
 <tr>
 
 <?php if($totales == 'si'){ ?>
-<td style="text-align:right; padding-right:45px;" colspan="<?php echo $colspan +2; ?>" ><strong style="font-size:16px">TOTALES</strong></td>
+<td style="text-align:right; padding-right:45px;" colspan="<?php echo $colspan +1; ?>" ><strong style="font-size:16px">TOTALES</strong></td>
 <?php } ?>
 
 
@@ -1699,7 +1699,7 @@ $totales2 = 'si';
 
 
 <?php if($totales2 == 'si'){ ?>
-<td style="text-align:right; padding-right:45px;" colspan="<?php echo $colspan2+2; ?>"><strong style="font-size:16px">TOTALES XML</strong></td>
+<td style="text-align:right; padding-right:45px;" colspan="<?php echo $colspan2+1; ?>"><strong style="font-size:16px">TOTALES XML</strong></td>
 <?php } ?>
 
 
