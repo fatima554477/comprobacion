@@ -852,10 +852,24 @@ $('#dataModal14').modal('toggle');
 });
 });
 
+$(document).on('click', '.view_MATCH2filtroSIVALE', function(){
+var personal_id = $(this).attr('id');
+$.ajax({
+url:'comprobacionesVYO/VistaPreviamatchSANTANDER.php',
+method:'POST',
+data:{personal_id:personal_id},
+beforeSend:function(){
+$('#mensajeDATOSBANCARIOS1').html('cargando');
+},
+success:function(data){
+$('#personal_detalles14').html(data);
+$('#dataModal14').modal('toggle');
+}
+});
+});
 
 
-
-			$('#target1').hide("linear");
+			 $('#target1').show("linear");
 			$('#target2').hide("linear");
 			$('#target3').hide("linear");
 			$('#target4').hide("linear");

@@ -686,21 +686,15 @@ if($row["FECHA_DE_LLENADO"]==''){
 <td width="30%" style="font-weight:bold;" ><label>PÓLIZA NÚMERO</label></td>
 <td width="70%"><input type="text" name="POLIZA_NUMERO" value="'.$row["POLIZA_NUMERO"].'"></td>
 </tr>
-<input type="hidden" name="EJECUTIVOTARJETA" value="'.$row["EJECUTIVOTARJETA"].'">
-
 
 <tr>
 <td width="30%" style="font-weight:bold;" ><label>BANCO</label></td>
 <td width="70%"><input type="text" name="BANCO_ORIGEN" value="'.$row["BANCO_ORIGEN"].'"></td>
 </tr>
+<input type="hidden" name="EJECUTIVOTARJETA" value="'.$row["EJECUTIVOTARJETA"].'">
 <tr>
 <td width="30%" style="font-weight:bold;" ><label>NOMBRE DEL EJECUTIVO QUE REALIZÓ LA COMPRA</label></td>
 <td width="70%"><input type="text" name="NOMBRE_DEL_EJECUTIVO" value="'.$row["NOMBRE_DEL_EJECUTIVO"].'"></td>
-</tr>
-
-<tr>
-<td width="30%" style="font-weight:bold;" ><label>NOMBRE DEL EJECUTIVO QUE INGRESO ESTA FACTURA</label></td>
-<td width="70%"><input type="text" name="NOMBRE_DEL_AYUDO" value="'.$row["NOMBRE_DEL_AYUDO"].'"></td>
 </tr>
 
 <tr>
@@ -827,27 +821,44 @@ $('#respuestaser').html('<p style="color:green;">'+response+'</p>');
 	    }
 	}
 	
-    $(document).ready(function(){
-		$("#clickPAGOP").click(function(){
-			$.ajax({
-				url:"comprobaciones/controladorPP.php",
-				method:"POST",  
-				data:$('#ListadoPAGOPROVEEform').serialize(),
-			beforeSend:function(){  
-				$('#mensaje').html('cargando'); 
-			}, 	
-			success:function(data){
-				if($.trim(data)=='Ingresado' || $.trim(data)=='Actualizado'){
-					$('#dataModal').modal('hide');
-					$.getScript(load(1));
-					$("#mensajepagoproveedores").html("<span id='ACTUALIZADO' >"+data+"</span>");
-				}else{
-					$("#mensajepagoproveedores").html(data);
-				}
-				$("#mensaje").html(data);
-			}  
-			});
-		});
-	});
+$(document).ready(function () {
+  $("#clickPAGOP").click(function () {
+    $.ajax({
+      url: "comprobaciones/controladorPP.php",
+      method: "POST",
+      data: $("#ListadoPAGOPROVEEform").serialize(),
+      beforeSend: function () {
+        $("#mensaje").html("cargando");
+      },
+      success: function (data) {
+        if ($.trim(data) === "Ingresado" || $.trim(data) === "Actualizado") {
+          $("#dataModal5").modal("hide");
+
+          // 1) Resuelve las URLs de los scripts
+          var urlCOM = typeof loadCOM === "function" ? loadCOM(1) : "js/loadCOM.js";
+          var url7   = typeof load7   === "function" ? load7(1)   : "js/load7.js";
+
+          // 2) Cárgalos en SECUENCIA para garantizar orden
+          $.ajax({ url: urlCOM, dataType: "script", cache: true })
+            .then(function () {
+              return $.ajax({ url: url7, dataType: "script", cache: true });
+            })
+            .then(function () {
+              $("#mensajepagoproveedores").html("<span id='ACTUALIZADO'>" + data + "</span>");
+            })
+            .fail(function (jqXHR, textStatus, errorThrown) {
+              $("#mensajepagoproveedores").html(
+                "Error al cargar scripts: " + (errorThrown || textStatus)
+              );
+            });
+
+        } else {
+          $("#mensajepagoproveedores").html(data);
+        }
+        $("#mensaje").html(data);
+      }
+    });
+  });
+});
 		
 	</script>

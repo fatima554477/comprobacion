@@ -2,8 +2,8 @@
 	<hr/>
 	<strong>
 		<p class="mb-0 text-uppercase">
-			<img src="includes/contraer31.png" id="mostrar3" onclick="load(1);" style="cursor:pointer;"/>
-			<img src="includes/contraer41.png" id="ocultar3" style="cursor:pointer;"/>&nbsp;&nbsp;&nbsp; FILTRO COMPROBACIONES DE GASTOS 
+			<img src="includes/contraer31.png" id="mostrar2" onclick="load(1);" style="cursor:pointer;"/>
+			<img src="includes/contraer41.png" id="ocultar2" style="cursor:pointer;"/>&nbsp;&nbsp;&nbsp; FILTRO COMPROBACIONES DE GASTOS 
 		</p>
 	</strong>
 </div>
@@ -14,7 +14,7 @@
 	</div>
 </div>
 							
-<div id="target3" style="display:block;" class="content2">
+<div id="target2" style="display:block;" class="content2">
 	<div class="card">
 		<div class="card-body">
 			<!--aqui inicia filtro-->

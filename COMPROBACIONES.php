@@ -705,42 +705,7 @@ while($rowsube=mysqli_fetch_array($listadosube)){
 ?></div>				 
 				 </td>
                  </tr>
-<tr style="background:#d2faf1">
-    <th> 
-        <strong><label for="validationCustom03" class="form-label">INSTITUCIÓN BANCARIA:<br></label></strong>  
-    </th>
-    <td>
-        <span id="desplegadoreset">
-            <?php
-            $encabezado = '';
-            $option = '';
-            $queryper = $conexion->desplegables07('COMPROBACION','BANCO_ORIGEN');
-            
-            // Almacenar y ordenar opciones
-            $opciones = array();
-            while($row1 = mysqli_fetch_array($queryper)) {
-                $opciones[] = $row1;
-            }
-            usort($opciones, function($a, $b) {
-                return strcasecmp($a['nombre_campo'], $b['nombre_campo']);
-            });
-            
-            // Generar HTML
-            $encabezado = '<select class="form-select mb-3" aria-label="Default select example" id="BANCO_ORIGEN" required="" name="BANCO_ORIGEN">
-                           <option value="">SELECCIONA UNA OPCIÓN</option>';
-            $fondos = array("fff0df","f4ffdf","dfffed","dffeff","dfe8ff","efdfff","ffdffd","efdfff","ffdfe9");
-            $num = 0;
-            
-            foreach($opciones as $row1) {
-                $num = ($num == 8) ? 0 : $num + 1;
-                $select = ($BANCO_ORIGEN == $row1['nombre_campo']) ? "selected" : "";
-                $option .= '<option style="background: #'.$fondos[$num].'" '.$select.' value="'.$row1['nombre_campo'].'">'.strtoupper($row1['nombre_campo']).'</option>';
-            }
-            echo $encabezado.$option.'</select>';			
-            ?>        
-        </span>
-    </td>
-</tr>
+
 
                  <tr  style="background: #d2faf1" >  
 
@@ -1100,6 +1065,78 @@ echo "<a target='_blank' href='includes/archivos/".$rowsube['NOTA_DE_CREDITO_COM
 <th scope="row"> <label  style="width:300px" for="validationCustom03" class="form-label">PÓLIZA NÚMERO:</label></th>
 <td><input type="text" class="form-control" id="POLIZA_NUMERO" required=""  value="<?php echo $POLIZA_NUMERO;  ?>" name="POLIZA_NUMERO" placeholder="POLIZA NÚMERO"></td>
 </tr>
+
+<tr>
+  <th style="background:#d2faf1;text-align:left" scope="col">
+    NOMBRE DEL EJECUTIVO TITULAR DE LA TARJETA:
+  </th>
+  <td style="background:#d2faf1">
+    <?php
+    $queryper = $conexion->colaborador_generico_bueno();
+
+    $selectHTML = '<select class="form-select mb-3" aria-label="Default select example"
+                    id="EJECUTIVOTARJETA" name="EJECUTIVOTARJETA" required>
+                    <option value="">SELECCIONA UNA OPCIÓN</option>';
+
+    $fondos = ["fff0df","f4ffdf","dfffed","dffeff","dfe8ff","efdfff","ffdffd","efdfff","ffdfe9"];
+    $num = 0;
+
+    while($row = mysqli_fetch_array($queryper)) {
+        if($num==8){$num=0;}else{$num++;}
+        $color = $fondos[$num];
+        
+        // Combina nombre completo
+        $nombreCompleto = trim($row['NOMBRE_1'].' '.$row['NOMBRE_2'].' '.$row['APELLIDO_PATERNO'].' '.$row['APELLIDO_MATERNO']);
+        
+        // Usa el ID como value
+        $selectHTML .= '<option style="background:#'.$color.'"
+                            value="'.$row['idRelacion'].'">'.$nombreCompleto.'</option>';
+    }
+
+    $selectHTML .= '</select>';
+    echo $selectHTML;
+    ?>
+  </td>
+</tr>
+
+
+<tr style="background:#d2faf1">
+    <th> 
+        <strong><label for="validationCustom03" class="form-label">INSTITUCIÓN BANCARIA:<br></label></strong>  
+    </th>
+    <td>
+        <span id="desplegadoreset">
+            <?php
+            $encabezado = '';
+            $option = '';
+            $queryper = $conexion->desplegables07('COMPROBACION','BANCO_ORIGEN');
+            
+            // Almacenar y ordenar opciones
+            $opciones = array();
+            while($row1 = mysqli_fetch_array($queryper)) {
+                $opciones[] = $row1;
+            }
+            usort($opciones, function($a, $b) {
+                return strcasecmp($a['nombre_campo'], $b['nombre_campo']);
+            });
+            
+            // Generar HTML
+            $encabezado = '<select class="form-select mb-3" aria-label="Default select example" id="BANCO_ORIGEN" required="" name="BANCO_ORIGEN">
+                           <option value="">SELECCIONA UNA OPCIÓN</option>';
+            $fondos = array("fff0df","f4ffdf","dfffed","dffeff","dfe8ff","efdfff","ffdffd","efdfff","ffdfe9");
+            $num = 0;
+            
+            foreach($opciones as $row1) {
+                $num = ($num == 8) ? 0 : $num + 1;
+                $select = ($BANCO_ORIGEN == $row1['nombre_campo']) ? "selected" : "";
+                $option .= '<option style="background: #'.$fondos[$num].'" '.$select.' value="'.$row1['nombre_campo'].'">'.strtoupper($row1['nombre_campo']).'</option>';
+            }
+            echo $encabezado.$option.'</select>';			
+            ?>        
+        </span>
+    </td>
+</tr>
+
 <tr  style="background:#fcf3cf" >				 
 <th scope="row"> <label  for="validationCustom03" class="form-label">NOMBRE DEL EJECUTIVO QUE INGRESO ESTA FACTURA:</label></th>
 <td><input type="text" class="form-control" id="validationCustom03" required=""  value="<?php echo $_SESSION["NOMBREUSUARIO"]; ?>" name="NOMBRE_DEL_AYUDO"placeholder="NOMBRE DEL EJECUTIVO"></td>
