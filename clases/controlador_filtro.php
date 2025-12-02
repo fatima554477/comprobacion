@@ -1106,31 +1106,36 @@ $colspan += 1; ?>/>
 
 
 <td style="text-align:center; background:
+
     <?php echo ($row["STATUS_FINANZAS"] == 'si') ? '#ceffcc' : '#e9d8ee'; ?>;" 
     id="color_FINANZAS<?php echo $row["07COMPROBACIONid"]; ?>">
 
     <input type="checkbox" 
-        style="width:30px; cursor:pointer;" 
+        style="width:30px;" 
         class="form-check-input" 
         id="STATUS_FINANZAS<?php echo $row["07COMPROBACIONid"]; ?>"  
         name="STATUS_FINANZAS<?php echo $row["07COMPROBACIONid"]; ?>" 
         value="<?php echo $row["07COMPROBACIONid"]; ?>"
-        <?php 
+       <?php
+        $permisoVerFINANZAS       = $database->variablespermisos('', 'DIRECCIONCOM2', 'ver') == 'si';
+        $permisoModificarFINANZAS = $database->variablespermisos('', 'DIRECCIONCOM2', 'modificar') == 'si';
+
         if ($row["STATUS_FINANZAS"] == 'si') {
-            // Ya autorizado → marcado y bloqueado
-            echo 'checked disabled style="cursor:not-allowed;" title="Ya autorizado"';
+            // Ya autorizado → marcado y bloqueado salvo que exista permiso de modificación
+            echo $permisoModificarFINANZAS
+                ? 'checked onclick="STATUS_FINANZAS('.$row["07COMPROBACIONid"].')"'
+                : 'checked disabled style="cursor:not-allowed;" title="Sin permiso para modificar"';
         } else {
-            if($database->variablespermisos("","DIRECCIONCOM2","ver") == "si"){
-                // Al marcar: ejecuta tu función, bloquea el checkbox y cambia estilo
-                echo 'onclick="STATUS_FINANZAS('.$row["07COMPROBACIONid"].'); this.disabled=true; this.style.cursor=\'not-allowed\';"';
+            // Validar permiso antes de habilitar
+            if($permisoVerFINANZAS){
+                echo 'onclick="STATUS_FINANZAS('.$row["07COMPROBACIONid"].')"';
             } else {
-                // Sin permiso → bloqueado
+                // Sin permiso → deshabilitado y con aviso
                 echo 'disabled style="cursor:not-allowed;" title="Sin permiso para modificar"';
             }
         }
         ?>
     />
-
     <?php $colspan += 1; ?>
 </td>
 
@@ -1139,20 +1144,25 @@ $colspan += 1; ?>/>
     <?php echo ($row["STATUS_AUDITORIA2"] == 'si') ? '#ceffcc' : '#e9d8ee'; ?>;" 
     id="color_AUDITORIA2<?php echo $row["07COMPROBACIONid"]; ?>">
 
-    <input type="checkbox" 
-        style="width:30px; cursor:pointer;" 
-        class="form-check-input" 
-        id="STATUS_AUDITORIA2<?php echo $row["07COMPROBACIONid"]; ?>"  
-        name="STATUS_AUDITORIA2<?php echo $row["07COMPROBACIONid"]; ?>" 
+    <input type="checkbox"
+        style="width:30px; cursor:pointer;"
+        class="form-check-input"
+        id="STATUS_AUDITORIA2<?php echo $row["07COMPROBACIONid"]; ?>"
+        name="STATUS_AUDITORIA2<?php echo $row["07COMPROBACIONid"]; ?>"
         value="<?php echo $row["07COMPROBACIONid"]; ?>"
-        <?php 
+        <?php
+        $permisoVerAUDITORIA2       = $database->variablespermisos('', 'AUDITORIACOM2', 'ver') == 'si';
+        $permisoModificarAUDITORIA2 = $database->variablespermisos('', 'AUDITORIACOM2', 'modificar') == 'si';
+
         if ($row["STATUS_AUDITORIA2"] == 'si') {
-            // Ya autorizado → marcado y bloqueado
-            echo 'checked disabled style="cursor:not-allowed;" title="Ya autorizado"';
+            // Ya autorizado → marcado y bloqueado salvo permiso de modificación
+            echo $permisoModificarAUDITORIA2
+                ? 'checked onclick="STATUS_AUDITORIA2('.$row["07COMPROBACIONid"].')"'
+                : 'checked disabled style="cursor:not-allowed;" title="Ya autorizado"';
         } else {
-            if($database->variablespermisos("","AUDITORIACOM2","ver") == "si"){
-                // Permitir acción → ejecutar función y bloquear checkbox
-                echo 'onclick="STATUS_AUDITORIA2('.$row["07COMPROBACIONid"].'); this.disabled=true; this.style.cursor=\'not-allowed\'; document.getElementById(\'color_AUDITORIA2'.$row["07COMPROBACIONid"].'\').style.background=\'#ceffcc\';"';
+            if($permisoVerAUDITORIA2){
+                // Permitir acción → al marcar se llama a tu función y se bloquea el checkbox
+                echo 'onclick="STATUS_AUDITORIA2('.$row["07COMPROBACIONid"].'); this.disabled=true; this.style.cursor=\'not-allowed\';"';
             } else {
                 // Sin permiso → bloqueado
                 echo 'disabled style="cursor:not-allowed;" title="Sin permiso para modificar"';
@@ -1160,15 +1170,15 @@ $colspan += 1; ?>/>
         }
         ?>
     />
-
     <?php $colspan += 1; ?>
+
 </td>
 
 
 
 <td style="text-align:center; background:
-    <?php echo ($row["STATUS_AUDITORIA3"] == 'si') ? '#ceffcc' : '#e9d8ee'; ?>;"
-    id="color_AUDITORIA3<?php echo $row["07COMPROBACIONid"]; ?>">
+    <?php echo ($row["STATUS_AUDITORIA3"] == 'si') ? '#ceffcc' : '#e9d8ee'; ?>;" 
+    id="color_AUDITORIA2<?php echo $row["07COMPROBACIONid"]; ?>">
 
     <input type="checkbox"
         style="width:30px; cursor:pointer;"
@@ -1177,16 +1187,18 @@ $colspan += 1; ?>/>
         name="STATUS_AUDITORIA3<?php echo $row["07COMPROBACIONid"]; ?>"
         value="<?php echo $row["07COMPROBACIONid"]; ?>"
         <?php
+        $permisoVerAUDITORIA3       = $database->variablespermisos('', 'CONTABILIDADCOM2', 'ver') == 'si';
+        $permisoModificarAUDITORIA3 = $database->variablespermisos('', 'CONTABILIDADCOM2', 'modificar') == 'si';
+
         if ($row["STATUS_AUDITORIA3"] == 'si') {
-            // Ya autorizado → marcado y bloqueado
-            echo 'checked disabled style="cursor:not-allowed;" title="Ya autorizado"';
+            // Ya autorizado → marcado y bloqueado salvo permiso de modificación
+            echo $permisoModificarAUDITORIA3
+                ? 'checked onclick="STATUS_AUDITORIA3('.$row["07COMPROBACIONid"].')"'
+                : 'checked disabled style="cursor:not-allowed;" title="Ya autorizado"';
         } else {
-            if ($database->variablespermisos("", "CONTABILIDADCOM2", "ver") == "si") {
-                // Permitir acción → ejecutar función, bloquear y pintar verde en vivo
-                echo 'onclick="STATUS_AUDITORIA3('.$row["07COMPROBACIONid"].');'
-                    .' this.disabled=true; this.style.cursor=\'not-allowed\';'
-                    .' document.getElementById(\'color_AUDITORIA3'.$row["07COMPROBACIONid"].'\').style.background=\'#ceffcc\';'
-                    .' this.title=\'Autorizado\';"';
+            if($permisoVerAUDITORIA3){
+                // Permitir acción → al marcar se llama a tu función y se bloquea el checkbox
+                echo 'onclick="STATUS_AUDITORIA3('.$row["07COMPROBACIONid"].'); this.disabled=true; this.style.cursor=\'not-allowed\';"';
             } else {
                 // Sin permiso → bloqueado
                 echo 'disabled style="cursor:not-allowed;" title="Sin permiso para modificar"';
@@ -1194,8 +1206,8 @@ $colspan += 1; ?>/>
         }
         ?>
     />
-
     <?php $colspan += 1; ?>
+
 </td>
 
 
