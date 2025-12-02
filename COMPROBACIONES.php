@@ -1,9 +1,48 @@
 <?php
 
+function obtenerBancoOrigenPorEjecutivo($dbConn, $idRelacion) {
+    static $cache = array();
+
+    $idRelacion = trim((string) $idRelacion);
+
+    if ($idRelacion === '') {
+        return '';
+    }
+
+    if (isset($cache[$idRelacion])) {
+        return $cache[$idRelacion];
+    }
+
+    if (!($dbConn instanceof mysqli)) {
+        return '';
+    }
+
+    $banco = '';
+    $idRelacionSafe = mysqli_real_escape_string($dbConn, $idRelacion);
+    $sql = "SELECT TBANCO
+            FROM 01Tempresarial
+            WHERE idRelacion = '{$idRelacionSafe}'
+              AND TBANCO IS NOT NULL
+              AND TRIM(TBANCO) <> ''
+            ORDER BY id DESC
+            LIMIT 1";
+
+    if ($resultado = mysqli_query($dbConn, $sql)) {
+        if ($row = mysqli_fetch_assoc($resultado)) {
+            $banco = trim($row['TBANCO']);
+        }
+        mysqli_free_result($resultado);
+    }
+
+    $cache[$idRelacion] = $banco;
+
+    return $banco;
+}
+
 /**
- 	--------------------------
-	Autor: Sandor Matamoros
-	Programer: Fatima Arellano
+        --------------------------
+        Autor: Sandor Matamoros
+        Programer: Fatima Arellano
 	Propietario: EPC
 	fecha sandor: 
     fecha fatis : 08/04/2024
@@ -212,7 +251,7 @@ $(document).on('change','input[type="checkbox"]' ,function(e) {
                  <tr  style="background: #d2faf1" > 
  
            
-                 <th scope="row"> <label  style="width:300px"  for="formFileSm"  class="form-label">ADJUNTAR FACTURA(FORMATO XML)</label></th>
+                 <th scope="row"> <label  style="width:300px"  for="formFileSm"  class="form-label">ADJUNTAR FACTURA FORMATO &nbsp;<a style="color:red;font:12px">(XML)</a></label></th>
                  <td>
 				 
 	
@@ -311,7 +350,7 @@ if( file_exists($url) ){
              <tr  style="background: #d2faf1" >  
             
              
-                 <th scope="row"> <label  style="width:300px" for="validationCustom03" class="form-label">ADJUNTAR FACTURA (FORMATO PDF)</label></th>
+                 <th scope="row"> <label  style="width:300px" for="validationCustom03" class="form-label">ADJUNTAR FACTURA FORMATO (PDF)</label></th>
 				 
 				 
              <td>
@@ -1081,15 +1120,19 @@ echo "<a target='_blank' href='includes/archivos/".$rowsube['NOTA_DE_CREDITO_COM
     $fondos = ["fff0df","f4ffdf","dfffed","dffeff","dfe8ff","efdfff","ffdffd","efdfff","ffdfe9"];
     $num = 0;
 
-    while($row = mysqli_fetch_array($queryper)) {
+   while($row = mysqli_fetch_array($queryper)) {
         if($num==8){$num=0;}else{$num++;}
         $color = $fondos[$num];
-        
+
         // Combina nombre completo
         $nombreCompleto = trim($row['NOMBRE_1'].' '.$row['NOMBRE_2'].' '.$row['APELLIDO_PATERNO'].' '.$row['APELLIDO_MATERNO']);
-        
+
+        $bancoOrigen = obtenerBancoOrigenPorEjecutivo($connecDB, $row['idRelacion']);
+        $dataBanco = htmlspecialchars($bancoOrigen, ENT_QUOTES, 'UTF-8');
+
         // Usa el ID como value
         $selectHTML .= '<option style="background:#'.$color.'"
+                            data-banco="'.$dataBanco.'"
                             value="'.$row['idRelacion'].'">'.$nombreCompleto.'</option>';
     }
 
@@ -1100,7 +1143,7 @@ echo "<a target='_blank' href='includes/archivos/".$rowsube['NOTA_DE_CREDITO_COM
 </tr>
 
 
-<tr style="background:#d2faf1">
+<tr style="background:#fcf3cf">
     <th> 
         <strong><label for="validationCustom03" class="form-label">INSTITUCIÓN BANCARIA:<br></label></strong>  
     </th>
@@ -1132,15 +1175,81 @@ echo "<a target='_blank' href='includes/archivos/".$rowsube['NOTA_DE_CREDITO_COM
                 $option .= '<option style="background: #'.$fondos[$num].'" '.$select.' value="'.$row1['nombre_campo'].'">'.strtoupper($row1['nombre_campo']).'</option>';
             }
             echo $encabezado.$option.'</select>';			
-            ?>        
+             ?>
         </span>
     </td>
 </tr>
 
-<tr  style="background:#fcf3cf" >				 
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const ejecutivotarjetaSelect = document.getElementById('EJECUTIVOTARJETA');
+    const bancoOrigenSelect = document.getElementById('BANCO_ORIGEN');
+
+    if (!ejecutivotarjetaSelect || !bancoOrigenSelect) {
+        return;
+    }
+
+    const ensureOptionExists = (value) => {
+        if (!value) {
+            return null;
+        }
+
+        const normalizedValue = value.trim();
+        if (!normalizedValue) {
+            return null;
+        }
+
+        for (let i = 0; i < bancoOrigenSelect.options.length; i++) {
+            const option = bancoOrigenSelect.options[i];
+            if (option.value.trim().toUpperCase() === normalizedValue.toUpperCase()) {
+                return option;
+            }
+        }
+
+        let dynamicOption = bancoOrigenSelect.querySelector('option[data-banco-dynamic="true"]');
+        if (!dynamicOption) {
+            dynamicOption = document.createElement('option');
+            dynamicOption.dataset.bancoDynamic = 'true';
+            bancoOrigenSelect.appendChild(dynamicOption);
+        }
+
+        dynamicOption.value = normalizedValue;
+        dynamicOption.textContent = normalizedValue.toUpperCase();
+
+        return dynamicOption;
+    };
+
+    const updateBancoOrigen = () => {
+        const selectedOption = ejecutivotarjetaSelect.options[ejecutivotarjetaSelect.selectedIndex];
+        if (!selectedOption) {
+            bancoOrigenSelect.value = '';
+            return;
+        }
+
+        const banco = (selectedOption.getAttribute('data-banco') || '').trim();
+
+        if (!banco) {
+            bancoOrigenSelect.value = '';
+            return;
+        }
+
+        const matchingOption = ensureOptionExists(banco);
+        if (matchingOption) {
+            matchingOption.selected = true;
+        }
+    };
+
+    ejecutivotarjetaSelect.addEventListener('change', updateBancoOrigen);
+    updateBancoOrigen();
+});
+</script>
+
+<tr  style="background:#fcf3cf" >
 <th scope="row"> <label  for="validationCustom03" class="form-label">NOMBRE DEL EJECUTIVO QUE INGRESO ESTA FACTURA:</label></th>
-<td><input type="text" class="form-control" id="validationCustom03" required=""  value="<?php echo $_SESSION["NOMBREUSUARIO"]; ?>" name="NOMBRE_DEL_AYUDO"placeholder="NOMBRE DEL EJECUTIVO"></td>
-</tr>                                                                   
+<td><input type="text" class="form-control" style="background:#D8E4F2" id="validationCustom03" required=""  value="<?php echo $_SESSION["NOMBREUSUARIO"]; ?>" name="NOMBRE_DEL_AYUDO"placeholder="NOMBRE DEL EJECUTIVO"></td>
+</tr>
+
+                                                                 
 
 
 <tr>
@@ -1466,8 +1575,8 @@ echo "<a target='_blank' href='includes/archivos/".$rowsube['ADJUNTAR_ARCHIVO_1'
                  <td><input type="text" class="form-control"  readonly="readonly" id="validationCustom03" required=""  value="<?php echo $Moneda; ?>" name="Moneda" placeholder="MONEDA"></td>
                  </tr>
                  <tr>
-                    <th scope="row"> <label  style="width:300px" for="validationCustom03" class="form-label">MONEDA EXTRANGERA:</label></th>
-                 <td><input type="text" class="form-control"  readonly="readonly" id="validationCustom03" required=""  value="<?php echo $MONEDA_EXTRANGERA_FACTURA; ?>" name="MONEDA_EXTRNGERA_FACTURA" placeholder="MONEDA EXTRANGERA"></td>
+                    <th scope="row"> <label  style="width:300px" for="validationCustom03" class="form-label">MONEDA EXTRANJERA:</label></th>
+                 <td><input type="text" class="form-control"  readonly="readonly" id="validationCustom03" required=""  value="<?php echo $MONEDA_EXTRANGERA_FACTURA; ?>" name="MONEDA_EXTRNGERA_FACTURA" placeholder="MONEDA EXTRANJERA"></td>
                  </tr>
                  
 				 <tr>
