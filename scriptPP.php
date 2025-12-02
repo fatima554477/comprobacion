@@ -1,5 +1,3 @@
-
-
 <?php
 /*
 fecha sandor: 
@@ -172,20 +170,28 @@ fecha fatis : 05/04/2024
 $('#1'+nombre).html('<p style="color:green;">Cargando archivo!</p>');
 $('#mensajeADJUNTOCOL').html('<p style="color:green;">Actualizado!</p>');
     },				
-	            success:function(response) {
-if($.trim(response) == 2 ){
-$('#1'+nombre).html('<p style="color:red;">Error, archivo diferente a PDF, JPG o GIF.</p>');
-$('#'+nombre).val("");
-}
-else if($.trim(response) == 3 ){
-	$('#1'+nombre).html('<p style="color:red;">UUID PREVIAMENTE CARGADO.</p>');
-$('#'+nombre).val("");
-/*nuevo inicio*/
+success:function(response) {
 
-}
-else{
-$('#'+nombre).val(response);
-$('#1'+nombre).html('<a target="_blank" href="includes/archivos/'+$.trim(response)+'"></a>');
+    // 1) Caso: UUID ya cargado
+    if ($.trim(response) == 3) {
+        $('#1' + nombre).html('<p style="color:red;">UUID PREVIAMENTE CARGADO.</p>');
+        $('#' + nombre).val("");
+        /*nuevo inicio*/
+    }
+
+    // 2) Caso: archivo no es XML
+    else if ($.trim(response) === 'El archivo debe estar en formato XML.') {
+        $('#1' + nombre).html('<p style="color:red;">' + $.trim(response) + '</p>');
+        $('#' + nombre).val("");
+    }
+
+    // 3) Caso: todo OK (respuesta correcta, subió archivo, etc.)
+    else {
+        // Si la respuesta es el nombre del archivo
+        $('#' + nombre).val(response);
+        $('#1' + nombre).html(
+            '<a target="_blank" href="includes/archivos/' + $.trim(response) + '"></a>'
+        );
 
 /*nuevo inicio*/
 $("#2ADJUNTAR_FACTURA_XML").load(location.href + " #2ADJUNTAR_FACTURA_XML");
@@ -307,21 +313,80 @@ function pasarpagado(pasarpagado_id){
 //////////////////////////////////////////////////////////////////////////////////////
 
 function comasainput(name){
-	
+
 const numberNoCommas = (x) => {
   return x.toString().replace(/,/g, "");
 }
 
     var total = document.getElementsByName(name)[0].value;
-	 var total2 = numberNoCommas(total)
+         var total2 = numberNoCommas(total)
 const numberWithCommas = (x) => {
   return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-}	
-    document.getElementsByName(name)[0].value = numberWithCommas(total2);	
+}
+    document.getElementsByName(name)[0].value = numberWithCommas(total2);
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
+
+function resetPagoProveedoresForm(){
+        if($('#pagoaproveedoresform').length){
+                $("#pagoaproveedoresform")[0].reset(); //resetea formulario
+        }
+
+        $("#RAZON_SOCIAL").val(''); //borra valores vienen de PHP
+        $("#RAZON_SOCIAL").val(''); //borra valores vienen de PHP
+        $("#CONCEPTO_PROVEE").val(''); //borra valores vienen de PHP
+        $("#RFC_PROVEEDOR").val(''); //borra valores vienen de PHP
+        $("#TIPO_DE_MONEDA").val(''); //borra valores vienen de PHP
+        $("#FECHA_DE_PAGO").val(''); //borra valores vienen de PHP
+        $("#NUMERO_CONSECUTIVO_PROVEE").val(''); //borra valores vienen de PHP
+        $("#ADJUNTAR_FACTURA_XML").val(''); //borra valores vienen de PHP
+        $("#2MONTO_FACTURA").val(''); //borra valores vienen de PHP
+        $("#2MONTO_DEPOSITAR").val(''); //borra valores vienen de PHP
+        $("#PFORMADE_PAGO").val(''); //borra valores vienen de PHP
+        $("#2ADJUNTAR_FACTURA_PDF").val(''); //borra valores vienen de PHP
+
+        /*reset multi imagen*/
+        $("#CONCEPTO_PROVEE2").load(location.href + " #CONCEPTO_PROVEE2");
+        $("#RAZON_SOCIAL2").load(location.href + " #RAZON_SOCIAL2");
+        $("#2ADJUNTAR_FACTURA_XML").load(location.href + " #2ADJUNTAR_FACTURA_XML");
+        $("#ADJUNTAR_FACTURA_XML").load(location.href + " #ADJUNTAR_FACTURA_XML");
+        $("#1ADJUNTAR_FACTURA_XML").load(location.href + " #1ADJUNTAR_FACTURA_XML");
+        $("#ADJUNTAR_FACTURA_PDF").load(location.href + " #ADJUNTAR_FACTURA_PDF");
+        $("#1ADJUNTAR_FACTURA_PDF").load(location.href + " #1ADJUNTAR_FACTURA_PDF");
+        $("#IMPUESTO_HOSPEDAJE").load(location.href + " #IMPUESTO_HOSPEDAJE");
+        $("#MONTO_PROPINA").load(location.href + " #MONTO_PROPINA");
+        $("#IVA").load(location.href + " #IVA");
+
+        $("#2ADJUNTAR_FACTURA_PDF").load(location.href + " #2ADJUNTAR_FACTURA_PDF");
+        $("#NOMBRE_COMERCIAL").load(location.href + " #NOMBRE_COMERCIAL");
+        $("#2ADJUNTAR_COTIZACION").load(location.href + " #2ADJUNTAR_COTIZACION");
+        $("#2CONPROBANTE_TRANSFERENCIA").load(location.href + " #2CONPROBANTE_TRANSFERENCIA");
+        $("#2ADJUNTAR_ARCHIVO_1").load(location.href + " #2ADJUNTAR_ARCHIVO_1");
+        $('#NUMERO_CONSECUTIVO_PROVEE2').load(location.href + ' #NUMERO_CONSECUTIVO_PROVEE2');
+        $('#2MONTO_FACTURA').load(location.href + ' #2MONTO_FACTURA');
+        $('#2MONTO_DEPOSITAR').load(location.href + ' #2MONTO_DEPOSITAR');
+        $('#2COMPLEMENTOS_PAGO_PDF').load(location.href + ' #2COMPLEMENTOS_PAGO_PDF');
+        $('#2COMPLEMENTOS_PAGO_XML').load(location.href + ' #2COMPLEMENTOS_PAGO_XML');
+        $('#2CANCELACIONES_PDF').load(location.href + ' #2CANCELACIONES_PDF');
+        $('#2CANCELACIONES_XML').load(location.href + ' #2CANCELACIONES_XML');
+        $('#2ADJUNTAR_FACTURA_DE_COMISION_PDF').load(location.href + ' #2ADJUNTAR_FACTURA_DE_COMISION_PDF');
+        $('#2ADJUNTAR_FACTURA_DE_COMISION_XML').load(location.href + ' #2ADJUNTAR_FACTURA_DE_COMISION_XML');
+        $('#2COMPROBANTE_DE_DEVOLUCION').load(location.href + ' #2COMPROBANTE_DE_DEVOLUCION');
+        $('#2CALCULO_DE_COMISION').load(location.href + ' #2CALCULO_DE_COMISION');
+        $('#2NOTA_DE_CREDITO_COMPRA').load(location.href + ' #2NOTA_DE_CREDITO_COMPRA');
+        $('#2IVA').load(location.href + ' #2IVA');
+        $('#2TImpuestosRetenidosIVA').load(location.href + ' #2TImpuestosRetenidosIVA');
+        $('#TImpuestosRetenidosIVA').load(location.href + ' #TImpuestosRetenidosIVA');
+        $('#2TImpuestosRetenidosISR').load(location.href + ' #2TImpuestosRetenidosISR');
+        $('#TImpuestosRetenidosISR').load(location.href + ' #TImpuestosRetenidosISR');
+        $('#2descuentos').load(location.href + ' #2descuentos');
+        $('#descuentos').load(location.href + ' #descuentos');
+
+        $('#resettabla').load(location.href + ' #resettabla');
+        $('#reset_totales').load(location.href + ' #reset_totales');
+}
 
 
 
@@ -332,6 +397,12 @@ const numberWithCommas = (x) => {
 
 	
 $(document).ready(function(){
+
+$.post('comprobaciones/controladorPP.php',{reset_historial_xml:'1'},function(){
+        resetPagoProveedoresForm();
+});
+
+
 
 
 
@@ -351,67 +422,17 @@ $.ajax({
     contentType: false,
     processData: false
 }).done(function(data) {
-		if($.trim(data)=='Ingresado' || $.trim(data)=='Actualizado'){
-			$("#pagoaproveedoresform")[0].reset(); //resetea formulario
-			$("#RAZON_SOCIAL").val(''); //borra valores vienen de PHP
-			$("#CONCEPTO_PROVEE").val(''); //borra valores vienen de PHP
-			$("#RFC_PROVEEDOR").val(''); //borra valores vienen de PHP
-			$("#TIPO_DE_MONEDA").val(''); //borra valores vienen de PHP
-			$("#FECHA_DE_PAGO").val(''); //borra valores vienen de PHP
-			$("#NUMERO_CONSECUTIVO_PROVEE").val(''); //borra valores vienen de PHP
-			$("#ADJUNTAR_FACTURA_XML").val(''); //borra valores vienen de PHP
-			$("#2MONTO_FACTURA").val(''); //borra valores vienen de PHP
-			$("#2MONTO_DEPOSITAR").val(''); //borra valores vienen de PHP
-			$("#PFORMADE_PAGO").val(''); //borra valores vienen de PHP
-			$("#2ADJUNTAR_FACTURA_PDF").val(''); //borra valores vienen de PHP
-			
-			/*reset multi imagen*/
-			$("#CONCEPTO_PROVEE2").load(location.href + " #CONCEPTO_PROVEE2");
-			$("#2ADJUNTAR_FACTURA_XML").load(location.href + " #2ADJUNTAR_FACTURA_XML");
-			$("#ADJUNTAR_FACTURA_XML").load(location.href + " #ADJUNTAR_FACTURA_XML");
-			$("#1ADJUNTAR_FACTURA_XML").load(location.href + " #1ADJUNTAR_FACTURA_XML");
-			$("#ADJUNTAR_FACTURA_PDF").load(location.href + " #ADJUNTAR_FACTURA_PDF");
-			$("#1ADJUNTAR_FACTURA_PDF").load(location.href + " #1ADJUNTAR_FACTURA_PDF");
-			$("#IMPUESTO_HOSPEDAJE").load(location.href + " #IMPUESTO_HOSPEDAJE");
-			$("#MONTO_PROPINA").load(location.href + " #MONTO_PROPINA");
-			$("#IVA").load(location.href + " #IVA");
+                if($.trim(data)=='Ingresado' || $.trim(data)=='Actualizado'){
+                        resetPagoProveedoresForm();
 
-			$("#2ADJUNTAR_FACTURA_PDF").load(location.href + " #2ADJUNTAR_FACTURA_PDF");
-			$("#NOMBRE_COMERCIAL").load(location.href + " #NOMBRE_COMERCIAL");
-			$("#2ADJUNTAR_COTIZACION").load(location.href + " #2ADJUNTAR_COTIZACION");
-			$("#2CONPROBANTE_TRANSFERENCIA").load(location.href + " #2CONPROBANTE_TRANSFERENCIA");
-			$("#2ADJUNTAR_ARCHIVO_1").load(location.href + " #2ADJUNTAR_ARCHIVO_1");
-			$('#NUMERO_CONSECUTIVO_PROVEE2').load(location.href + ' #NUMERO_CONSECUTIVO_PROVEE2');
-			$('#2MONTO_FACTURA').load(location.href + ' #2MONTO_FACTURA');
-			$('#2MONTO_DEPOSITAR').load(location.href + ' #2MONTO_DEPOSITAR');
-			$('#2COMPLEMENTOS_PAGO_PDF').load(location.href + ' #2COMPLEMENTOS_PAGO_PDF');
-			$('#2COMPLEMENTOS_PAGO_XML').load(location.href + ' #2COMPLEMENTOS_PAGO_XML');
-			$('#2CANCELACIONES_PDF').load(location.href + ' #2CANCELACIONES_PDF');
-			$('#2CANCELACIONES_XML').load(location.href + ' #2CANCELACIONES_XML');
-			$('#2ADJUNTAR_FACTURA_DE_COMISION_PDF').load(location.href + ' #2ADJUNTAR_FACTURA_DE_COMISION_PDF');
-			$('#2ADJUNTAR_FACTURA_DE_COMISION_XML').load(location.href + ' #2ADJUNTAR_FACTURA_DE_COMISION_XML');
-			$('#2COMPROBANTE_DE_DEVOLUCION').load(location.href + ' #2COMPROBANTE_DE_DEVOLUCION');
-			$('#2CALCULO_DE_COMISION').load(location.href + ' #2CALCULO_DE_COMISION');
-			$('#2NOTA_DE_CREDITO_COMPRA').load(location.href + ' #2NOTA_DE_CREDITO_COMPRA');
-			$('#2IVA').load(location.href + ' #2IVA');
-			$('#2TImpuestosRetenidosIVA').load(location.href + ' #2TImpuestosRetenidosIVA');
-			$('#TImpuestosRetenidosIVA').load(location.href + ' #TImpuestosRetenidosIVA');
-			$('#2TImpuestosRetenidosISR').load(location.href + ' #2TImpuestosRetenidosISR');
-			$('#TImpuestosRetenidosISR').load(location.href + ' #TImpuestosRetenidosISR');
-			$('#2descuentos').load(location.href + ' #2descuentos');
-			$('#descuentos').load(location.href + ' #descuentos');
-
-			$("#mensajepagoproveedores").html("<span id='ACTUALIZADO' >"+data+"</span>").delay(2000).fadeOut();
-            $('#resettabla').load(location.href + ' #resettabla');	
-	
-            $('#reset_totales').load(location.href + ' #reset_totales');
-			$.getScript(load(1));
-
-        
+                        $("#mensajepagoproveedores").html("<span id='ACTUALIZADO' >"+data+"</span>").delay(2000).fadeOut();
+                        $.getScript(load(1));
 
 
-			
-			}else{
+
+
+
+                        }else{
 			$("#mensajepagoproveedores").html(data).delay(2000).fadeOut();
 		}
 })

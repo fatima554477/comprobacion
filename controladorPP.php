@@ -11,16 +11,28 @@ include_once (__ROOT1__."/comprobaciones/class.epcinnPP.php");
 $pagoproveedores= NEW accesoclase();
 $conexion = NEW colaboradores();
 $conexion2 = new herramientas();
-                                               
+
 
 $hiddenpagoproveedores = isset($_POST["hiddenpagoproveedores"])?$_POST["hiddenpagoproveedores"]:"";
 $validaDATOSBANCARIOS1 = isset($_POST["validaDATOSBANCARIOS1"])?$_POST["validaDATOSBANCARIOS1"]:"";
 $ENVIARRdatosbancario1p = isset($_POST["ENVIARRdatosbancario1p"])?$_POST["ENVIARRdatosbancario1p"]:"";
 $borrapagoaproveedores = isset($_POST["borrapagoaproveedores"])?$_POST["borrapagoaproveedores"]:"";
 $borra_datos_bancario1 = isset($_POST["borra_datos_bancario1"])?$_POST["borra_datos_bancario1"]:"";
-$ENVIARPAGOprovee = isset($_POST["ENVIARPAGOprovee"])?$_POST["ENVIARPAGOprovee"]:""; 
-$borrasb = isset($_POST["borrasb"])?$_POST["borrasb"]:""; 
+$ENVIARPAGOprovee = isset($_POST["ENVIARPAGOprovee"])?$_POST["ENVIARPAGOprovee"]:"";
+$borrasb = isset($_POST["borrasb"])?$_POST["borrasb"]:"";
 $borrasbdoc = isset($_POST["borrasbdoc"])?$_POST["borrasbdoc"]:"";
+$reset_historial_xml = isset($_POST["reset_historial_xml"])?$_POST["reset_historial_xml"]:"";
+
+if($reset_historial_xml == '1' or $reset_historial_xml == 'true'){
+        $idRelacionHistorial = isset($_SESSION["idCG"])?$_SESSION["idCG"]:"";
+        if($idRelacionHistorial != ''){
+                $pagoproveedores->limpiar_historial_factura_xml($idRelacionHistorial,__ROOT1__.'/includes/archivos/');
+                echo "Historial limpiado";
+        }else{
+                echo "Sin relacion";
+        }
+        exit;
+}
 
 
 	$busqueda = isset($_POST["busqueda"])?$_POST["busqueda"]:"";
@@ -28,23 +40,22 @@ $q = isset($_POST["q"])?$_POST["q"]:"";
 
 $action = isset($_POST["action"])?$_POST["action"]:"";
 if($action=='ajax'){
-	$NUMERO_EVENTO = isset($_POST["NUMERO_EVENTO"])?$_POST["NUMERO_EVENTO"]:"";
-	echo $resultado = $pagoproveedores->buscarnombre($NUMERO_EVENTO);
+        $NUMERO_EVENTO = isset($_POST["NUMERO_EVENTO"])?$_POST["NUMERO_EVENTO"]:"";
+        echo $resultado = $pagoproveedores->buscarnombre($NUMERO_EVENTO);
+}
+
+if(!empty($_FILES["ADJUNTAR_FACTURA_XML"]["name"])){
+        $extensionFactura = strtolower(pathinfo($_FILES["ADJUNTAR_FACTURA_XML"]["name"], PATHINFO_EXTENSION));
+        if($extensionFactura !== 'xml'){
+                echo "El archivo debe estar en formato XML.";
+                exit;
+        }
 }
 
 if($q==true){
-	$json = [];
-	$json = $pagoproveedores->buscarnumero2($q);
-	 echo json_encode($json);	
-}
-
-
-
-
-if($busqueda==true){
-
-	 $resultado = $pagoproveedores->buscarnumero($busqueda);
-	 echo json_encode($resultado);
+        $json = [];
+        $json = $pagoproveedores->buscarnumero2($q);
+         echo json_encode($json);
 }
 
 

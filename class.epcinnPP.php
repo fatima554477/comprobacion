@@ -951,10 +951,10 @@ if($row['ultimo_id']==0 or $row['ultimo_id']==''){
 
 	}
 	
-	public function borrar_xmls($ruta,$id,$nombrearchivo,$tabla1,$tabla2){ 
-		$conn = $this->db();
-		//`07COMPROBACIONDOCT` WHERE `idTemporal`
-		// `07XML` ORDER BY `07XML`.`ultimo_id`
+   public function borrar_xmls($ruta,$id,$nombrearchivo,$tabla1,$tabla2){
+                $conn = $this->db();
+                //`07COMPROBACIONDOCT` WHERE `idTemporal`
+                // `07XML` ORDER BY `07XML`.`ultimo_id`
 		$var1 = "delete FROM ".$tabla1." WHERE `ultimo_id` = '".$id."' ";
 		mysqli_query($conn,$var1);
 
@@ -967,14 +967,40 @@ if($row['ultimo_id']==0 or $row['ultimo_id']==''){
 			UNLINK($ruta.''.$row['ADJUNTAR_FACTURA_XML']);
 			}
 		}
-		$var3 = "DELETE FROM ".$tabla2." WHERE `idTemporal` = '".$id."'and 
-		ADJUNTAR_FACTURA_XML <> '".$nombrearchivo."' and ADJUNTAR_FACTURA_XML <>'' ";
-		mysqli_query($conn,$var3) or die('P44'.mysqli_error($conn));		
-	}
+ $var3 = "DELETE FROM ".$tabla2." WHERE `idTemporal` = '".$id."'and
+                ADJUNTAR_FACTURA_XML <> '".$nombrearchivo."' and ADJUNTAR_FACTURA_XML <>'' ";
+                mysqli_query($conn,$var3) or die('P44'.mysqli_error($conn));
+        }
+
+        public function limpiar_historial_factura_xml($idRelacion, $ruta){
+                $conn = $this->db();
+
+                if($idRelacion == ''){
+                        return;
+                }
+
+                $rutaArchivos = rtrim($ruta, '/').'/';
+
+                $consultaArchivos = "select ADJUNTAR_FACTURA_XML from 07COMPROBACIONDOCT where idRelacion = '".$idRelacion."' and idTemporal = 'si' and (ADJUNTAR_FACTURA_XML is not null and ADJUNTAR_FACTURA_XML <> '')";
+                $resultados = mysqli_query($conn,$consultaArchivos);
+
+                while($row = mysqli_fetch_array($resultados, MYSQLI_ASSOC)){
+                        $nombreArchivo = trim($row['ADJUNTAR_FACTURA_XML']);
+                        if($nombreArchivo != ''){
+                                $rutaCompleta = $rutaArchivos.$nombreArchivo;
+                                if(file_exists($rutaCompleta)){
+                                        unlink($rutaCompleta);
+                                }
+                        }
+                }
+
+                $var3 = "DELETE FROM 07COMPROBACIONDOCT WHERE idRelacion = '".$idRelacion."' and idTemporal = 'si' and (ADJUNTAR_FACTURA_XML is not null and ADJUNTAR_FACTURA_XML <> '')";
+                mysqli_query($conn,$var3) or die('P44'.mysqli_error($conn));
+        }
 
     public function select_02XML(){
-    $conn = $this->db(); 
-    $variablequery = "select id from 07COMPROBACION order by id desc "; 
+    $conn = $this->db();
+    $variablequery = "select id from 07COMPROBACION order by id desc ";
     $arrayquery = mysqli_query($conn,$variablequery);
     $row = mysqli_fetch_array($arrayquery, MYSQLI_ASSOC);
 	return $row['id'];	
