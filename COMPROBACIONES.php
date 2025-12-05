@@ -488,7 +488,7 @@ var parametros = {
                  </tr>
                  <tr  style="background: #d2faf1">
                  
-                 <th scope="row"> <label  style="width:300px" for="validationCustom03" class="form-label">MOTIVO DEL GASTO:</label></th>
+                 <th scope="row"> <label  style="width:300px" for="validationCustom03" class="form-label">MOTIVO DEL GASTO:<br><a style="color:red;font-size:11px">OBLIGATORIO</a></label></th>
                  <td><input type="text" class="form-control" id="validationCustom03" required=""  value="<?php echo $MOTIVO_GASTO; ?>" name="MOTIVO_GASTO"placeholder="MOTIVO DEL GASTO "></td>
                  </tr>
                  <tr style="background:#fcf3cf"> 
@@ -586,7 +586,7 @@ var parametros = {
                  <th scope="row"> <label  style="width:300px" for="validationCustom03" class="form-label">TOTAL:</label></th>
                  <td>
 				 <div id="2MONTO_DEPOSITAR">
-             <div class="input-group mb-3"> <span class="input-group-text">$</span><input type="text" class="form-control" id="MONTO_DEPOSITAR" required=""   value="<?php echo $total; ?>" name="MONTO_DEPOSITAR"placeholder="TOTAL">
+             <div class="input-group mb-3"> <span class="input-group-text">$</span><input type="text" class="form-control" id="MONTO_DEPOSITAR" required=""   value="<?php echo $total; ?>" name="MONTO_DEPOSITAR"placeholder="TOTAL"  readonly="readonly">
 				
 				 </td>
                  </tr> </div> </div>
@@ -1253,7 +1253,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 <tr>
-    <th style="background: #d2faf1; text-align:left" scope="col">NOMBRE DEL EJECUTIVO QUE REALIZÓ LA COMPRA:</th>
+    <th style="background: #d2faf1; text-align:left" scope="col">NOMBRE DEL EJECUTIVO QUE REALIZÓ LA COMPRA:<br><a style="color:red;font-size:11px">OBLIGATORIO</a></th>
        <td  style="background: #d2faf1"  >
 <?php
 $encabezadoA = '';
