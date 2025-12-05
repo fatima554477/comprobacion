@@ -110,9 +110,24 @@ define("__ROOT1__", dirname(dirname(__FILE__)));
         LIMIT 1
     ";
 
-    $nombreCompleto = 'NOMBRE_DEL_EJECUTIVO' // valor por defecto (gris clarito)
+    $nombreCompleto = 'SIN INFORMACIÓN'; // valor por defecto (gris clarito)
     
+    if ($query = mysqli_query($conn, $sql)) {
+        if ($row = mysqli_fetch_assoc($query)) {
+            // Une los nombres con espacios y elimina dobles espacios
+            $nombreCompleto = trim(
+                $row['NOMBRE_1'].' '.
+                $row['NOMBRE_2'].' '.
+                $row['APELLIDO_PATERNO'].' '.
+                $row['APELLIDO_MATERNO']
+            );
 
+            // Si por alguna razón está vacío, mantiene el texto “SIN INFORMACIÓN”
+            if ($nombreCompleto == '') {
+                $nombreCompleto = 'SIN INFORMACIÓN';
+            }
+        }
+    }
 
     return $nombreCompleto;
 }

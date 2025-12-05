@@ -483,7 +483,7 @@ function recalcularTotal() {
 		var TuaTotalCargos = getVal("TuaTotalCargos");
 		var Descuento = getVal("Descuento");
 		var propina = getVal("propina");
-		var per_page = getVal("per_pageVYO");
+		var per_page = getVal("per_page");
 		var parametros = {
 			"action": "ajax",
 			"page": page,
@@ -563,21 +563,21 @@ function recalcularTotal() {
 			
 			'DEPARTAMENTO2':DEPARTAMENTO2
 			};
-			$("#loader5").fadeIn('slow');
+			$("#loader").fadeIn('slow');
     $.ajax({
-    url: 'comprobacionesVYO/clases/controlador_filtro.php', 
+        url: 'comprobaciones/clases/controlador_filtro.php', 
         type: 'POST',
         data: parametros,
 beforeSend: function(objeto){
-  $("#loader5").html(
+  $("#loader").html(
     '<div class="msg-actualizando">' +
-      '<span class="loader5"></span> ⏳ ACTUALIZADO...' +
+      '<span class="loader"></span> ⏳ ACTUALIZADO...' +
     '</div>'
   ).fadeIn();
 
   // Quitar el mensaje después de 3 segundos
   setTimeout(function(){
-    $("#loader5").fadeOut("slow", function(){
+    $("#loader").fadeOut("slow", function(){
       $(this).html(""); // limpia el contenido después de ocultarlo
     });
   }, 1000);
