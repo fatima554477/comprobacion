@@ -334,7 +334,7 @@ if($database->plantilla_filtro($nombreTabla,"TOTAL_ENPESOS",$altaeventos,$DEPART
 <?php 
 if($database->plantilla_filtro($nombreTabla,"PFORMADE_PAGO",$altaeventos,$DEPARTAMENTO)=="si"){ ?><th style="background:#f48a81;text-align:center">FORMA DE PAGO</th>
 <?php } ?><?php 
-if($database->plantilla_filtro($nombreTabla,"FECHA_A_DEPOSITAR",$altaeventos,$DEPARTAMENTO)=="si"){ ?><th style="background:#f48a81;text-align:center">FECHA EFECTIVA DE PAGO</th>
+if($database->plantilla_filtro($nombreTabla,"FECHA_A_DEPOSITAR",$altaeventos,$DEPARTAMENTO)=="si"){ ?><th style="background:#f48a81;text-align:center">FECHA DE CARGO EN TDC</th>
 <?php } ?><?php 
 if($database->plantilla_filtro($nombreTabla,"STATUS_DE_PAGO",$altaeventos,$DEPARTAMENTO)=="si"){ ?><th style="background:#f48a81;text-align:center">STATUS DE PAGO</th>
 <?php } ?><?php 
@@ -1878,7 +1878,7 @@ $totales2 = 'si';
 
 
 <?php if($totales2 == 'si'){ ?>
-<td style="text-align:right; padding-right:45px;" colspan="<?php echo $colspan2+1; ?>"><strong style="font-size:16px">TOTALES XML</strong></td>
+<td style="text-align:right; padding-right:45px;" colspan="<?php echo $colspan2+2; ?>"><strong style="font-size:16px">TOTALES XML</strong></td>
 <?php } ?>
 
 

@@ -451,7 +451,7 @@ function recalcularTotal() {
 		var TOTAL_ENPESOS = getVal("TOTAL_ENPESOS");
 		var IMPUESTO_HOSPEDAJE = getVal("IMPUESTO_HOSPEDAJE");
 		var NOMBRE_COMERCIAL = getVal("NOMBRE_COMERCIAL_1");
-		var IVA = getVal("IVA");
+		var IVA = getVal("IVA_1");
 		var TImpuestosRetenidosIVA = getVal("TImpuestosRetenidosIVA_5");
 		var TImpuestosRetenidosISR = getVal("TImpuestosRetenidosISR_5");
 		var descuentos = getVal("descuentos_5");
@@ -525,6 +525,7 @@ function recalcularTotal() {
 			'FECHA_DE_LLENADO': FECHA_DE_LLENADO,
 			'ADJUNTAR_COTIZACION_1_1': ADJUNTAR_COTIZACION_1_1,
 			'TIPO_CAMBIOP': TIPO_CAMBIOP,
+			'IVA': IVA,
 			'TOTAL_ENPESOS': TOTAL_ENPESOS,
 			'IMPUESTO_HOSPEDAJE': IMPUESTO_HOSPEDAJE,
 			'TImpuestosRetenidosIVA_5': TImpuestosRetenidosIVA,
