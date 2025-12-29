@@ -182,7 +182,16 @@ function calcular() {
     });
 }
 
-// Ejecutamos todo cuando cargue el DOM
+		             function setCurrentFillingDate() {
+                       const fechaInput = document.querySelector('input[name="FECHA_DE_LLENADO"]');
+                       if(!fechaInput) {
+                               return;
+                       }
+                       const now = new Date();
+                       const pad = (value) => value.toString().padStart(2, '0');
+                       const formatted = `${pad(now.getDate())}-${pad(now.getMonth() + 1)}-${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+                       fechaInput.value = formatted;
+               }
 document.addEventListener("DOMContentLoaded", calcular);
 
 
@@ -393,7 +402,7 @@ while($rowsube=mysqli_fetch_array($listadosube)){
 				 
 				
 				 
-				 <input type="text" class="form-control"  required="" id="RAZON_SOCIAL" value="<?php echo $NOMBRE_COMERCIAL; ?>" name="NOMBRE_COMERCIAL" placeholder="NOMBRE COMERCIAL">
+				 <input type="text" class="form-control"  required=""  value="<?php echo $NOMBRE_COMERCIAL; ?>" name="NOMBRE_COMERCIAL" placeholder="NOMBRE COMERCIAL">
 				
 				 </td>
                  </tr>				 
@@ -427,7 +436,7 @@ while($rowsube=mysqli_fetch_array($listadosube)){
                  </tr>
  <tr style="background: #d2faf1">
                  
-                 <th scope="row"> <label  style="width:300px" for="validationCustom03" class="form-label">No. DE EVENTO:</label></th>
+                 <th scope="row"> <label  style="width:300px" for="validationCustom03" class="form-label">No. DE EVENTO:<br><a style="color:red;font-size:11px">OBLIGATORIO</a></label></th>
                  <td>
 				 
 
@@ -695,7 +704,7 @@ var parametros = {
 				 
                  <tr style="background: #d2faf1"> 
 
-                 <th scope="row"> <label  style="width:300px" for="validationCustom03" class="form-label">FECHA  EFECTIVA DE PAGO:</label></th>
+                 <th scope="row"> <label  style="width:300px" for="validationCustom03" class="form-label">FECHA DE CARGO EN TDC:</label></th>
                  <td><input type="date" class="form-control" id="validationCustom03" required=""  value="<?php echo $FECHA_A_DEPOSITAR; ?>" name="FECHA_A_DEPOSITAR" placeholder="FECHA A DEPOSITAR"></td>
                  </tr>
                
@@ -1107,7 +1116,7 @@ echo "<a target='_blank' href='includes/archivos/".$rowsube['NOTA_DE_CREDITO_COM
 
 <tr>
   <th style="background:#d2faf1;text-align:left" scope="col">
-    NOMBRE DEL EJECUTIVO TITULAR DE LA TARJETA:
+    NOMBRE DEL EJECUTIVO TITULAR DE LA TARJETA:<br><a style="color:red;font-size:11px">OBLIGATORIO</a>
   </th>
   <td style="background:#d2faf1">
     <?php
@@ -1253,7 +1262,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 <tr>
-    <th style="background: #d2faf1; text-align:left" scope="col">NOMBRE DEL EJECUTIVO QUE REALIZÓ LA COMPRA:<br><a style="color:red;font-size:11px">OBLIGATORIO</a></th>
+    <th style="background: #d2faf1; text-align:left" scope="col">NOMBRE DEL EJECUTIVO QUE REALIZÓ LA COMPRA:</th>
        <td  style="background: #d2faf1"  >
 <?php
 $encabezadoA = '';
@@ -1390,7 +1399,7 @@ echo "<a target='_blank' href='includes/archivos/".$rowsube['ADJUNTAR_ARCHIVO_1'
      
              <td>
          
-         <input type="hidden" style="width:200px;"  class="form-control" id="validationCustom03"   value="<?php echo date('d-m-Y'); ?>" name="FECHA_DE_LLENADO">
+ <input type="hidden" style="width:200px;" class="form-control" id="validationCustom03" value="<?php echo date('d-m-Y H:i:s'); ?>" name="FECHA_DE_LLENADO">
          
          </td></tr>  
             

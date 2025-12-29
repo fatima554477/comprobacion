@@ -1056,9 +1056,21 @@ public function Listado_pagoproveedor(){ $conn = $this->db(); $variablequery = "
 	return $arrayquery = mysqli_query($conn,$variablequery); 
 	}
 	
-    public function delete_subefacturadocto2($id){ $conn = $this->db(); 
+  public function delete_subefacturadocto2($id){ $conn = $this->db();
+
+    $query = "SELECT idTemporal, ADJUNTAR_FACTURA_XML FROM 07COMPROBACIONDOCT WHERE id = '".$id."' ";
+    $resultado = mysqli_query($conn,$query);
+    $row = mysqli_fetch_array($resultado, MYSQLI_ASSOC);
+
+    if ($row && $row['ADJUNTAR_FACTURA_XML'] != '') {
+        $variablequery = "DELETE FROM 07XML WHERE ultimo_id = '".$row['idTemporal']."' ";
+        mysqli_query($conn,$variablequery);
+
+
+    }
+
     $variablequery = "delete from 07COMPROBACIONDOCT where id = '".$id."' ";
-    return $arrayquery = mysqli_query($conn,$variablequery); 
+    return $arrayquery = mysqli_query($conn,$variablequery);
 
 }
 

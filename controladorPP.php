@@ -243,8 +243,11 @@ $DescripcionConcepto = isset($_POST["DescripcionConcepto"])?$_POST["DescripcionC
 $Cantidad = isset($_POST["Cantidad"])?$_POST["Cantidad"]:"";
 $ClaveUnidad = isset($_POST["ClaveUnidad"])?$_POST["ClaveUnidad"]:"";
 $ClaveProdServ = isset($_POST["ClaveProdServ"])?$_POST["ClaveProdServ"]:"";
-//print_r($_POST);
-              // include_once (__ROOT1__."/includes/crea_funciones.php");PFORMADE_PAGO
+
+if( $MOTIVO_GASTO == "" ){
+	echo "<P style='color:red; font-size:23px;'>FAVOR DE LLENAR CAMPOS OBLIGATORIOS</p>";
+}else{
+
 echo $pagoproveedores->PAGOPRO ($NUMERO_CONSECUTIVO_PROVEE , $NOMBRE_COMERCIAL , $RAZON_SOCIAL , $RFC_PROVEEDOR , $NUMERO_EVENTO ,$NOMBRE_EVENTO, $MOTIVO_GASTO , $CONCEPTO_PROVEE , $MONTO_TOTAL_COTIZACION_ADEUDO , $MONTO_DEPOSITAR , $MONTO_PROPINA , $FECHA_AUTORIZACION_RESPONSABLE , $FECHA_AUTORIZACION_AUDITORIA , $FECHA_DE_LLENADO , $MONTO_FACTURA , $TIPO_DE_MONEDA , $PFORMADE_PAGO,$FECHA_DE_PAGO , $FECHA_A_DEPOSITAR , $STATUS_DE_PAGO ,$ACTIVO_FIJO, $GASTO_FIJO,$PAGAR_CADA,$FECHA_PPAGO,$FECHA_TPROGRAPAGO,$NUMERO_EVENTOFIJO,$CLASI_GENERAL,$SUB_GENERAL,$BANCO_ORIGEN , $MONTO_DEPOSITADO , $CLASIFICACION_GENERAL , $CLASIFICACION_ESPECIFICA , $PLACAS_VEHICULO , $MONTO_DE_COMISION , $POLIZA_NUMERO , $EJECUTIVOTARJETA,$NOMBRE_DEL_EJECUTIVO , $NOMBRE_DEL_AYUDO,$OBSERVACIONES_1, $TIPO_CAMBIOP,  $TOTAL_ENPESOS,$IMPUESTO_HOSPEDAJE,$IVA,$TImpuestosRetenidosIVA,$TImpuestosRetenidosISR,$descuentos, $ENVIARPAGOprovee,$hiddenpagoproveedores,$IPpagoprovee,
 	$FechaTimbrado, $tipoDeComprobante, 
 		$metodoDePago, $formaDePago, $condicionesDePago, $subTotal, 
@@ -260,6 +263,7 @@ $tablesdb = '07COMPROBACION';
 	  include_once (__ROOT1__."/includes/crea_funciones_filtro_completo.php");*/
 
 
+}
 }
 elseif($borrapagoaproveedores == 'borrapagoaproveedores'){
 	$borra_id_PAGOP = isset($_POST["borra_id_PAGOP"])?$_POST["borra_id_PAGOP"]:"";   
