@@ -96,13 +96,23 @@ define("__ROOT1__", dirname(dirname(__FILE__)));
                return $tarjetaUpper;
        }
 	
-	public function nombreCompletoPorID($id) {
-    $conn = $this->db(); // tu conexión a la base de datos
+}
 
-    // Previene SQL injection
-    $id = mysqli_real_escape_string($conn, trim($id));
+	public function countAll($sql){
+		$query = $this->mysqli->query($sql);
+		if (!$query) {
+			return 0;
+		}
 
-    // Consulta
+		$row = $query->fetch_assoc();
+		if (!isset($row['total'])) {
+			return 0;
+		}
+
+		return (int) $row['total'];
+	}
+	
+	
     $sql = "
         SELECT NOMBRE_1, NOMBRE_2, APELLIDO_PATERNO, APELLIDO_MATERNO
         FROM 01informacionpersonal
@@ -362,23 +372,25 @@ $sWhere2.="  $tables2.propina = '".$propina."' AND ";}
 
 
 
+	$sWhere3campo = '';
 IF($sWhere2!=""){
-			$sWhere22 = substr($sWhere2,0,-4);
+			$sWhere22 = substr($sWhere2,0,-3);
 			$sWhere3  = ' ('.$sWhere22.') ';
-			$sWhere3  = ' '.$sWhereCC.' where ( ('.$sWhere3.') ) ';			
+			$sWhere3Base  = ' '.$sWhereCC.' where ( ('.$sWhere3.') ) ';			
 		}ELSE{
 			//$sWhereCC = substr($sWhereCC,0,-4);			
-		$sWhere3  = ' '.$sWhereCC.' ';
+		$sWhere3Base  = ' '.$sWhereCC.' ';
 		}
 		$sWhere3campo.=" $tables.id desc ";		
-$sWhere3 .= " order by ".$sWhere3campo;
+		$sWhere3Order = " order by ".$sWhere3campo;
+		$sWhere3 = $sWhere3Base.$sWhere3Order;
 
 		//$sWhere3.="  order by $tables.id desc ";
 //echo $sql="SELECT $campos FROM  $tables $sWhere $sWhere3 LIMIT $offset,$per_page";
-		 $sql="SELECT $campos , 07COMPROBACION.id as 07COMPROBACIONid FROM $tables LEFT JOIN $tables2 $sWhere $sWhere3 LIMIT $offset,$per_page";
+		$sql="SELECT $campos , 07COMPROBACION.id as 07COMPROBACIONid FROM $tables LEFT JOIN $tables2 $sWhere $sWhere3 LIMIT $offset,$per_page";
 		
 		$query=$this->mysqli->query($sql);
-		$sql1="SELECT $campos , 07COMPROBACION.id as 07COMPROBACIONid FROM  $tables LEFT JOIN $tables2 $sWhere $sWhere3 ";
+		$sql1="SELECT COUNT(*) as total FROM $tables LEFT JOIN $tables2 $sWhere $sWhere3Base";
 		$nums_row=$this->countAll($sql1);
 		//Set counter
 		$this->setCounter($nums_row);
