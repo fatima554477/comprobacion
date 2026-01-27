@@ -260,7 +260,7 @@ $(document).on('change','input[type="checkbox"]' ,function(e) {
                  <tr  style="background: #d2faf1" > 
  
            
-                 <th scope="row"> <label  style="width:300px"  for="formFileSm"  class="form-label">ADJUNTAR FACTURA FORMATO &nbsp;<a style="color:red;font:12px">(XML)</a></label></th>
+                 <th scope="row"> <label  style="width:300px"  for="formFileSm"  class="form-label">ADJUNTAR FACTURA FORMATO &nbsp;<a style="color:red;font:12px">(XML)</a></a><BR><a style="color:red;font:12px">SI NO TIENES POR EL MOMENTO EL ARCHIVO XML, <br>PRIMERO DEBES CAPTURAR RAZÓN SOCIAL <br>Y DESPUÉS CARGAR EL PDF</a></label></th>
                  <td>
 				 
 	
@@ -704,7 +704,7 @@ var parametros = {
 				 
                  <tr style="background: #d2faf1"> 
 
-                 <th scope="row"> <label  style="width:300px" for="validationCustom03" class="form-label">FECHA DE CARGO EN TDC:</label></th>
+                 <th scope="row"> <label  style="width:300px" for="validationCustom03" class="form-label">FECHA DE CARGO EN TDC<br><a style="color:red;font-size:11px">OBLIGATORIO</a></label></th>
                  <td><input type="date" class="form-control" id="validationCustom03" required=""  value="<?php echo $FECHA_A_DEPOSITAR; ?>" name="FECHA_A_DEPOSITAR" placeholder="FECHA A DEPOSITAR"></td>
                  </tr>
                

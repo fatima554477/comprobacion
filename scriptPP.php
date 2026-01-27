@@ -411,7 +411,7 @@ $.ajax({
 	
             $('#reset_totales').load(location.href + ' #reset_totales');
 			$.getScript(load(1));
-				location.reload();
+				
 
         
 
