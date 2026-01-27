@@ -1,4 +1,3 @@
-
 <style>
 /* Loader con animación */
 .loader {
@@ -412,7 +411,10 @@ function recalcularTotal() {
         });
 
 	function load(page){
-		var getVal = id => $("#" + id).val();
+			var getVal = id => {
+				const value = $("#" + id).val();
+				return typeof value === 'string' ? value.trim() : '';
+			};
 		var query = $("#NOMBRE_EVENTO").val();
 		var DEPARTAMENTO2 = getVal("DEPARTAMENTO2WE");
 		var NUMERO_CONSECUTIVO_PROVEE = getVal("NUMERO_CONSECUTIVO_PROVEE_1");
@@ -421,6 +423,8 @@ function recalcularTotal() {
 		var NUMERO_EVENTO = getVal("NUMERO_EVENTO_1");
 		var EJECUTIVOTARJETA = getVal("EJECUTIVOTARJETA_1");
 		var NOMBRE_EVENTO = getVal("NOMBRE_EVENTO_1");
+		var FECHA_INICIO_EVENTO=$("#FECHA_INICIO_EVENTO").val();
+        var FECHA_FINAL_EVENTO=$("#FECHA_FINAL_EVENTO").val();
 		var MOTIVO_GASTO = getVal("MOTIVO_GASTO_1");
 		var CONCEPTO_PROVEE = getVal("CONCEPTO_PROVEE_1");
 		var MONTO_TOTAL_COTIZACION_ADEUDO = getVal("MONTO_TOTAL_COTIZACION_ADEUDO_1");
@@ -447,7 +451,7 @@ function recalcularTotal() {
 		var OBSERVACIONES_1 = getVal("OBSERVACIONES_1_1_1");
 		var FECHA_DE_LLENADO = getVal("FECHA_DE_LLENADO_1");
 		var ADJUNTAR_COTIZACION_1_1 = getVal("ADJUNTAR_COTIZACION_1_1");
-		var TIPO_CAMBIOP = getVal("TIPO_CAMBIOP");
+		var TIPO_CAMBIOP = getVal("TIPO_CAMBIOP_1");
 		var TOTAL_ENPESOS = getVal("TOTAL_ENPESOS");
 		var IMPUESTO_HOSPEDAJE = getVal("IMPUESTO_HOSPEDAJE");
 		var NOMBRE_COMERCIAL = getVal("NOMBRE_COMERCIAL_1");
@@ -519,6 +523,8 @@ function recalcularTotal() {
 			'SUB_GENERAL': SUB_GENERAL,
 			'MONTO_DE_COMISION': MONTO_DE_COMISION,
 			'POLIZA_NUMERO': POLIZA_NUMERO,
+			'FECHA_FINAL_EVENTO':FECHA_FINAL_EVENTO,
+            'FECHA_INICIO_EVENTO':FECHA_INICIO_EVENTO,
 			'NOMBRE_DEL_EJECUTIVO': NOMBRE_DEL_EJECUTIVO,
 			'NOMBRE_DEL_AYUDO': NOMBRE_DEL_AYUDO,
 			'OBSERVACIONES_1': OBSERVACIONES_1,
@@ -611,10 +617,3 @@ if (lastCheckboxID !== null) {
 /* terminaB1*/		
 		
 	</script>
-			
-			
-			
-			
-			
-			
-			

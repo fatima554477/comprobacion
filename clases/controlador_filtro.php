@@ -29,10 +29,11 @@ if($action == "ajax"){
 	$DEPARTAMENTO = !empty($_POST["DEPARTAMENTO2"]) ? $_POST["DEPARTAMENTO2"] : "DEFAULT";	
 	$nombreTabla = "SELECT * FROM `08comprobacionesfiltroDes`, 08altaeventosfiltroPLA WHERE 08comprobacionesfiltroDes.id = 08altaeventosfiltroPLA.idRelacion";
 	$altaeventos = "comprobaciones";
+	$tables = "04altaeventos";
 
 	$NUMERO_CONSECUTIVO_PROVEE = isset($_POST["NUMERO_CONSECUTIVO_PROVEE"]) ? $_POST["NUMERO_CONSECUTIVO_PROVEE"] : ""; 
 	$RAZON_SOCIAL = isset($_POST["RAZON_SOCIAL"]) ? $_POST["RAZON_SOCIAL"] : ""; 
-	$EJECUTIVOTARJETA = isset($_POST["EJECUTIVOTARJETA"]) ? $_POST["EJECUTIVOTARJETA"] : ""; 
+    $EJECUTIVOTARJETA = isset($_POST["EJECUTIVOTARJETA"]) ? trim($_POST["EJECUTIVOTARJETA"]) : "";
 	$NUMERO_EVENTO = isset($_POST["NUMERO_EVENTO"]) ? $_POST["NUMERO_EVENTO"] : ""; 
 	$RFC_PROVEEDOR = isset($_POST["RFC_PROVEEDOR"]) ? $_POST["RFC_PROVEEDOR"] : ""; 
 	$NOMBRE_EVENTO = isset($_POST["NOMBRE_EVENTO"]) ? $_POST["NOMBRE_EVENTO"] : ""; 
@@ -65,6 +66,8 @@ if($action == "ajax"){
 	$TIPO_CAMBIOP = isset($_POST["TIPO_CAMBIOP"]) ? $_POST["TIPO_CAMBIOP"] : ""; 
 	$TOTAL_ENPESOS = isset($_POST["TOTAL_ENPESOS"]) ? $_POST["TOTAL_ENPESOS"] : ""; 
 	$IMPUESTO_HOSPEDAJE = isset($_POST["IMPUESTO_HOSPEDAJE"]) ? $_POST["IMPUESTO_HOSPEDAJE"] : ""; 
+	$FECHA_INICIO_EVENTO = isset($_POST["FECHA_INICIO_EVENTO"])?$_POST["FECHA_INICIO_EVENTO"]:""; 
+    $FECHA_FINAL_EVENTO = isset($_POST["FECHA_FINAL_EVENTO"])?$_POST["FECHA_FINAL_EVENTO"]:""; 
 	$IVA = isset($_POST["IVA"]) ? $_POST["IVA"] : "";
 	$NOMBRE_COMERCIAL = isset($_POST["NOMBRE_COMERCIAL"]) ? $_POST["NOMBRE_COMERCIAL"] : "";
 	$TImpuestosRetenidosIVA = isset($_POST["TImpuestosRetenidosIVA_5"]) ? $_POST["TImpuestosRetenidosIVA_5"] : ""; 
@@ -110,7 +113,8 @@ if($action == "ajax"){
 	}
 
 	$per_page = intval($_POST["per_page"]);
-	$campos = "*";
+		$campos="*";
+	$campos="07COMPROBACION.*, 07XML.*, 04altaeventos.FECHA_INICIO_EVENTO AS FECHA_INICIO_EVENTO, 04altaeventos.FECHA_FINAL_EVENTO AS FECHA_FINAL_EVENTO";
 	$page = (isset($_POST["page"]) && !empty($_POST["page"])) ? $_POST["page"] : 1;
 	$adjacents = 4;
 	$offset = ($page - 1) * $per_page;
@@ -153,6 +157,8 @@ if($action == "ajax"){
 		"TOTAL_ENPESOS" => $TOTAL_ENPESOS,
 		"IMPUESTO_HOSPEDAJE" => $IMPUESTO_HOSPEDAJE,
 		"IVA" => $IVA,
+		"FECHA_INICIO_EVENTO"=>$FECHA_INICIO_EVENTO,
+        "FECHA_FINAL_EVENTO"=>$FECHA_FINAL_EVENTO,
 		"TImpuestosRetenidosIVA" => $TImpuestosRetenidosIVA,
 		"TImpuestosRetenidosISR" => $TImpuestosRetenidosISR,
 		"descuentos" => $descuentos,
@@ -246,7 +252,7 @@ if($action == "ajax"){
 
 
 <?php 
-if($database->plantilla_filtro($nombreTabla,"FECHA_DE_LLENADO",$altaeventos,$DEPARTAMENTO)=="si"){ ?><th style="background:#c9e8e8;text-align:center">FECHA DE LLENADO</th>
+if($database->plantilla_filtro($nombreTabla,"FECHA_DE_LLENADO",$altaeventos,$DEPARTAMENTO)=="si"){ ?><th style="background:#c9e8e8;text-align:center">FECHA Y HORA <br> DE LLENADO</th>
 <?php } ?>
 <?php 
 if($database->plantilla_filtro($nombreTabla,"ADJUNTAR_FACTURA_XML",$altaeventos,$DEPARTAMENTO)=="si"){ ?><th style="background:#c9e8e8;text-align:center">FACTURA XML</th>
@@ -268,7 +274,17 @@ if($database->plantilla_filtro($nombreTabla,"RFC_PROVEEDOR",$altaeventos,$DEPART
 if($database->plantilla_filtro($nombreTabla,"NUMERO_EVENTO",$altaeventos,$DEPARTAMENTO)=="si"){ ?><th style="background:#c9e8e8;text-align:center">NÚMERO EVENTO</th>
 <?php } ?><?php 
 if($database->plantilla_filtro($nombreTabla,"NOMBRE_EVENTO",$altaeventos,$DEPARTAMENTO)=="si"){ ?><th style="background:#c9e8e8;text-align:center">NOMBRE DEL EVENTO</th>
-<?php } ?><?php 
+<?php } ?>
+
+<?php 
+if($database->plantilla_filtro($nombreTabla,"FECHA_INICIO_EVENTO",$altaeventos,$DEPARTAMENTO)=="si"){ ?><th style="background:#c9e8e8;text-align:center">FECHA INICIO DEL EVENTO</th>
+<?php } ?>
+<?php 
+if($database->plantilla_filtro($nombreTabla,"FECHA_FINAL_EVENTO",$altaeventos,$DEPARTAMENTO)=="si"){ ?><th style="background:#c9e8e8;text-align:center">FECHA FINAL DEL EVENTO</th>
+<?php } ?>
+
+
+<?php 
 if($database->plantilla_filtro($nombreTabla,"MOTIVO_GASTO",$altaeventos,$DEPARTAMENTO)=="si"){ ?><th style="background:#c9e8e8;text-align:center">MOTIVO DEL GASTO</th>
 <?php } ?><?php 
 if($database->plantilla_filtro($nombreTabla,"CONCEPTO_PROVEE",$altaeventos,$DEPARTAMENTO)=="si"){ ?><th style="background:#c9e8e8;text-align:center">CONCEPTO DE LA FACTURA</th>
@@ -583,6 +599,25 @@ echo $NUMERO_EVENTO; ?>"></td>
 if($database->plantilla_filtro($nombreTabla,"NOMBRE_EVENTO",$altaeventos,$DEPARTAMENTO)=="si"){ ?><td style="background:#c9e8e8"><input type="text" class="form-control" id="NOMBRE_EVENTO_1" value="<?php 
 echo $NOMBRE_EVENTO; ?>"></td>
 <?php } ?>
+
+
+<?php  
+if($database->plantilla_filtro($nombreTabla,"FECHA_INICIO_EVENTO",$altaeventos,$DEPARTAMENTO)=="si"){ ?><td style="background:#c9e8e8"><input type="date" class="form-control" id="FECHA_INICIO_EVENTO" value="<?php 
+echo $FECHA_INICIO_EVENTO; ?>">
+</td>
+<?php } ?>
+
+<?php  
+if($database->plantilla_filtro($nombreTabla,"FECHA_FINAL_EVENTO",$altaeventos,$DEPARTAMENTO)=="si"){ ?><td style="background:#c9e8e8"><input type="date" class="form-control" id="FECHA_FINAL_EVENTO" value="<?php 
+echo $FECHA_FINAL_EVENTO; ?>">
+</td>
+<?php } ?>
+
+
+
+
+
+
 <?php  
 if($database->plantilla_filtro($nombreTabla,"MOTIVO_GASTO",$altaeventos,$DEPARTAMENTO)=="si"){ ?><td style="background:#c9e8e8"><input type="text" class="form-control" id="MOTIVO_GASTO_1" value="<?php 
 echo $MOTIVO_GASTO; ?>"></td>
@@ -1216,8 +1251,26 @@ $colspan += 1; ?>/>
 </td>
 
 
-<?php  if($database->plantilla_filtro($nombreTabla,"FECHA_DE_LLENADO",$altaeventos,$DEPARTAMENTO)=="si"){ $colspan += 1; ?><td style="text-align:center"><?php echo $row['FECHA_DE_LLENADO'];?></td>
-<?php } ?>
+<?php  
+if ($database->plantilla_filtro($nombreTabla,"FECHA_DE_LLENADO",$altaeventos,$DEPARTAMENTO)=="si") {
+
+    $fechaHora = $row['FECHA_DE_LLENADO'];
+    $fecha = date('d-m-Y', strtotime($fechaHora));
+    $hora  = date('H:i:s', strtotime($fechaHora));
+?>
+<td style="text-align:center">
+    <?php echo $fecha; ?>
+    <span style="color:#2542C4; font-weight:bold;">
+        <?php echo $hora; ?>
+    </span>
+</td>
+<?php 
+    $colspan2 += 1;
+} 
+?>
+
+
+
 <?php  if($database->plantilla_filtro($nombreTabla,"ADJUNTAR_FACTURA_XML",$altaeventos,$DEPARTAMENTO)=="si"){ $colspan += 1; ?><td style="text-align:center"><?php echo $ADJUNTAR_FACTURA_XML; ?></td>
 <?php } ?>
 <?php  if($database->plantilla_filtro($nombreTabla,"ADJUNTAR_FACTURA_PDF",$altaeventos,$DEPARTAMENTO)=="si"){ $colspan += 1; ?><td style="text-align:center"><?php echo $ADJUNTAR_FACTURA_PDF; ?></td>
@@ -1232,6 +1285,36 @@ $colspan += 1; ?>/>
 <?php } ?>
 <?php  if($database->plantilla_filtro($nombreTabla,"NOMBRE_EVENTO",$altaeventos,$DEPARTAMENTO)=="si"){ $colspan += 1; ?><td style="text-align:center"><?php echo $row['NOMBRE_EVENTO'];?></td>
 <?php } ?>
+
+
+
+
+
+<?php  
+if ($database->plantilla_filtro($nombreTabla,"FECHA_INICIO_EVENTO",$altaeventos,$DEPARTAMENTO)=="si") {
+    $colspan += 1;
+
+    $fecha = isset($row['FECHA_INICIO_EVENTO']) ? trim($row['FECHA_INICIO_EVENTO']) : '';
+    if ($fecha !== '' && $fecha !== '0000-00-00') {
+        echo "<td style='text-align:center'>".date('d/m/Y', strtotime($fecha))."</td>";
+    } else {
+        echo "<td style='text-align:center'></td>";
+    }
+}
+?>
+
+<?php  
+if ($database->plantilla_filtro($nombreTabla,"FECHA_FINAL_EVENTO",$altaeventos,$DEPARTAMENTO)=="si") {
+    $colspan += 1;
+
+    $fecha2 = isset($row['FECHA_FINAL_EVENTO']) ? trim($row['FECHA_FINAL_EVENTO']) : '';
+    if ($fecha2 !== '' && $fecha2 !== '0000-00-00') {
+        echo "<td style='text-align:center'>".date('d/m/Y', strtotime($fecha2))."</td>";
+    } else {
+        echo "<td style='text-align:center'></td>";
+    }
+}
+?>
 <?php  if($database->plantilla_filtro($nombreTabla,"MOTIVO_GASTO",$altaeventos,$DEPARTAMENTO)=="si"){ $colspan += 1; ?><td style="text-align:center"><?php echo $row['MOTIVO_GASTO'];?></td>
 <?php } ?>
 <?php  if($database->plantilla_filtro($nombreTabla,"CONCEPTO_PROVEE",$altaeventos,$DEPARTAMENTO)=="si"){ $colspan += 1; ?><td style="text-align:center"><?php echo $row['CONCEPTO_PROVEE'];?></td>
@@ -1820,7 +1903,7 @@ $totales2 = 'si';
 <tr>
 
 <?php if($totales == 'si'){ ?>
-<td style="text-align:right; padding-right:45px;" colspan="<?php echo $colspan +1; ?>" ><strong style="font-size:16px">TOTALES</strong></td>
+<td style="text-align:right; padding-right:45px;" colspan="<?php echo $colspan +2; ?>" ><strong style="font-size:16px">TOTALES</strong></td>
 <?php } ?>
 
 
