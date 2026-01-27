@@ -13,28 +13,33 @@ define("__ROOT1__", dirname(dirname(__FILE__)));
 	include_once (__ROOT1__."/../comprobaciones/class.epcinnPP.php");
 
 	
-	class orders extends accesoclase {
+class orders extends accesoclase {
 	public $mysqli;
 	public $counter;//Propiedad para almacenar el numero de registro devueltos por la consulta
+	private $matchCache = [];
+	private $matchAnyCache = [];
+	private $tarjetaCache = [];
 
 	function __construct(){
 		$this->mysqli = $this->db();
     }
 		/*se ocupa en MATCH_BBVA.php regresa checked*/
-	public function validaexistematch2COMPROBACION($IpMATCHDOCUMENTOS2,$TARJETA){
-		$conn = $this->db();		
-			$pregunta = 'select * from 12matchDocumentos where 
-			estatus = "si" and documentoConFactura="'.$IpMATCHDOCUMENTOS2.'" AND tarjeta="'.$TARJETA.'" ';
-			$preguntaQ = mysqli_query($conn,$pregunta) or die('P1533'.mysqli_error($conn));
-			$ROWP = MYSQLI_FETCH_ARRAY($preguntaQ, MYSQLI_ASSOC);
+public function validaexistematch2COMPROBACION($IpMATCHDOCUMENTOS2,$TARJETA){
+		$cacheKey = $IpMATCHDOCUMENTOS2.'|'.$TARJETA;
+		if (isset($this->matchCache[$cacheKey])) {
+			return $this->matchCache[$cacheKey];
+		}
 
-		
-				
-			if($ROWP['id']==0){
-			return '';
-			}else{
-			return 'checked';				
-			}
+		$conn = $this->db();
+		$documento = mysqli_real_escape_string($conn, $IpMATCHDOCUMENTOS2);
+		$tarjeta = mysqli_real_escape_string($conn, $TARJETA);
+		$pregunta = 'select 1 from 12matchDocumentos where 
+			estatus = "si" and documentoConFactura="'.$documento.'" AND tarjeta="'.$tarjeta.'" limit 1';
+		$preguntaQ = mysqli_query($conn,$pregunta) or die('P1533'.mysqli_error($conn));
+		$resultado = (mysqli_num_rows($preguntaQ) > 0) ? 'checked' : '';
+		$this->matchCache[$cacheKey] = $resultado;
+
+		return $resultado;
 	}
 
 
@@ -42,45 +47,51 @@ define("__ROOT1__", dirname(dirname(__FILE__)));
 
 
 
+
+
+
+
+
+
 	public function validaexistematch2COMPROBACIONtodos($IpMATCHDOCUMENTOS2,$TARJETA){
+		if (isset($this->matchAnyCache[$IpMATCHDOCUMENTOS2])) {
+			return $this->matchAnyCache[$IpMATCHDOCUMENTOS2];
+		}
+
 		$conn = $this->db();
-	
-			$pregunta1 = 'select * from 12matchDocumentos where 
-			estatus = "si" and documentoConFactura="'.$IpMATCHDOCUMENTOS2.'" AND tarjeta="AMERICANE" ';
-			$preguntaQ1 = mysqli_query($conn,$pregunta1) or die('P1533'.mysqli_error($conn));
-			$ROWP1 = MYSQLI_FETCH_ARRAY($preguntaQ1, MYSQLI_ASSOC);
+		$documento = mysqli_real_escape_string($conn, $IpMATCHDOCUMENTOS2);
+		$pregunta = 'select 1 from 12matchDocumentos where 
+			estatus = "si" and documentoConFactura="'.$documento.'" AND tarjeta IN ("AMERICANE","INBURSA","TARJETABBVA") limit 1';
+		$preguntaQ = mysqli_query($conn,$pregunta) or die('P1533'.mysqli_error($conn));
+		$resultado = (mysqli_num_rows($preguntaQ) > 0) ? 'checked' : '';
+		$this->matchAnyCache[$IpMATCHDOCUMENTOS2] = $resultado;
 
-			$pregunta2 = 'select * from 12matchDocumentos where 
-			estatus = "si" and documentoConFactura="'.$IpMATCHDOCUMENTOS2.'" AND tarjeta="INBURSA" ';
-			$preguntaQ2 = mysqli_query($conn,$pregunta2) or die('P1533'.mysqli_error($conn));
-			$ROWP2 = MYSQLI_FETCH_ARRAY($preguntaQ2, MYSQLI_ASSOC);
-
-			$pregunta3 = 'select * from 12matchDocumentos where 
-			estatus = "si" and documentoConFactura="'.$IpMATCHDOCUMENTOS2.'" AND tarjeta="TARJETABBVA" ';
-			$preguntaQ3 = mysqli_query($conn,$pregunta3) or die('P1533'.mysqli_error($conn));
-			$ROWP3 = MYSQLI_FETCH_ARRAY($preguntaQ3, MYSQLI_ASSOC);
-			
-                if($ROWP1['id']==0 and $ROWP2['id']==0 and $ROWP3['id']==0){
-                return '';
-                }else{
-                return 'checked';
-                }
+		return $resultado;
         }
 
+
        public function tarjetaComprobacion($IpMATCHDOCUMENTOS2){
+               if (isset($this->tarjetaCache[$IpMATCHDOCUMENTOS2])) {
+                       return $this->tarjetaCache[$IpMATCHDOCUMENTOS2];
+               }
+
                $conn = $this->db();
-               $pregunta = 'select tarjeta from 12matchDocumentos where
-               estatus = "si" and documentoConFactura="'.$IpMATCHDOCUMENTOS2.'"';
+               $documento = mysqli_real_escape_string($conn, $IpMATCHDOCUMENTOS2);
+               $pregunta = 'select distinct tarjeta from 12matchDocumentos where
+               estatus = "si" and documentoConFactura="'.$documento.'"';
                $preguntaQ = mysqli_query($conn,$pregunta) or die('P1533'.mysqli_error($conn));
                $tarjetas = array();
                while($ROWP = MYSQLI_FETCH_ARRAY($preguntaQ, MYSQLI_ASSOC)){
                        $tarjetas[] = $this->nombreTarjeta($ROWP['tarjeta']);
                }
                if(count($tarjetas) == 0){
-                       return '';
+                       $resultado = '';
                }else{
-                       return implode(', ', $tarjetas);
+                       $resultado = implode(', ', $tarjetas);
                }
+
+               $this->tarjetaCache[$IpMATCHDOCUMENTOS2] = $resultado;
+               return $resultado;
        }
 
        private function nombreTarjeta($tarjeta){
@@ -96,23 +107,13 @@ define("__ROOT1__", dirname(dirname(__FILE__)));
                return $tarjetaUpper;
        }
 	
-}
+	public function nombreCompletoPorID($id) {
+    $conn = $this->db(); // tu conexión a la base de datos
 
-	public function countAll($sql){
-		$query = $this->mysqli->query($sql);
-		if (!$query) {
-			return 0;
-		}
+    // Previene SQL injection
+    $id = mysqli_real_escape_string($conn, trim($id));
 
-		$row = $query->fetch_assoc();
-		if (!isset($row['total'])) {
-			return 0;
-		}
-
-		return (int) $row['total'];
-	}
-	
-	
+    // Consulta
     $sql = "
         SELECT NOMBRE_1, NOMBRE_2, APELLIDO_PATERNO, APELLIDO_MATERNO
         FROM 01informacionpersonal
@@ -372,25 +373,23 @@ $sWhere2.="  $tables2.propina = '".$propina."' AND ";}
 
 
 
-	$sWhere3campo = '';
 IF($sWhere2!=""){
-			$sWhere22 = substr($sWhere2,0,-3);
+			$sWhere22 = substr($sWhere2,0,-4);
 			$sWhere3  = ' ('.$sWhere22.') ';
-			$sWhere3Base  = ' '.$sWhereCC.' where ( ('.$sWhere3.') ) ';			
+			$sWhere3  = ' '.$sWhereCC.' where ( ('.$sWhere3.') ) ';			
 		}ELSE{
 			//$sWhereCC = substr($sWhereCC,0,-4);			
-		$sWhere3Base  = ' '.$sWhereCC.' ';
+		$sWhere3  = ' '.$sWhereCC.' ';
 		}
 		$sWhere3campo.=" $tables.id desc ";		
-		$sWhere3Order = " order by ".$sWhere3campo;
-		$sWhere3 = $sWhere3Base.$sWhere3Order;
+$sWhere3 .= " order by ".$sWhere3campo;
 
 		//$sWhere3.="  order by $tables.id desc ";
 //echo $sql="SELECT $campos FROM  $tables $sWhere $sWhere3 LIMIT $offset,$per_page";
-		$sql="SELECT $campos , 07COMPROBACION.id as 07COMPROBACIONid FROM $tables LEFT JOIN $tables2 $sWhere $sWhere3 LIMIT $offset,$per_page";
+		 $sql="SELECT $campos , 07COMPROBACION.id as 07COMPROBACIONid FROM $tables LEFT JOIN $tables2 $sWhere $sWhere3 LIMIT $offset,$per_page";
 		
 		$query=$this->mysqli->query($sql);
-		$sql1="SELECT COUNT(*) as total FROM $tables LEFT JOIN $tables2 $sWhere $sWhere3Base";
+		$sql1="SELECT $campos , 07COMPROBACION.id as 07COMPROBACIONid FROM  $tables LEFT JOIN $tables2 $sWhere $sWhere3 ";
 		$nums_row=$this->countAll($sql1);
 		//Set counter
 		$this->setCounter($nums_row);
