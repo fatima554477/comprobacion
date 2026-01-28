@@ -19,23 +19,10 @@ class orders extends accesoclase {
 	private $matchCache = [];
 	private $matchAnyCache = [];
 	private $tarjetaCache = [];
-	private $plantillaFiltroCache = [];
-
 
 	function __construct(){
 		$this->mysqli = $this->db();
     }
-	public function plantilla_filtro($nombreTabla, $campo, $altaeventos, $departamento) {
-		$cacheKey = $nombreTabla.'|'.$campo.'|'.$altaeventos.'|'.$departamento;
-		if (isset($this->plantillaFiltroCache[$cacheKey])) {
-			return $this->plantillaFiltroCache[$cacheKey];
-		}
-
-		$resultado = parent::plantilla_filtro($nombreTabla, $campo, $altaeventos, $departamento);
-		$this->plantillaFiltroCache[$cacheKey] = $resultado;
-
-		return $resultado;
-	}
 		/*se ocupa en MATCH_BBVA.php regresa checked*/
 public function validaexistematch2COMPROBACION($IpMATCHDOCUMENTOS2,$TARJETA){
 		$cacheKey = $IpMATCHDOCUMENTOS2.'|'.$TARJETA;
@@ -158,20 +145,31 @@ public function validaexistematch2COMPROBACION($IpMATCHDOCUMENTOS2,$TARJETA){
 
 	
 	public function countAll($sql){
-		$query=$this->mysqli->query($sql);
-		$count=$query->num_rows;
-		return $count;
+		$query = $this->mysqli->query($sql);
+		if (!$query) {
+			return 0;
+		}
+
+		$row = $query->fetch_assoc();
+		if ($row && (isset($row['total']) || isset($row['count']))) {
+			return (int) ($row['total'] ?? $row['count']);
+		}
+
+		return $query->num_rows;
 	}
 	//STATUS_EVENTO,NOMBRE_CORTO_EVENTO,NOMBRE_EVENTO
 	public function getData($tables,$campos,$search){
-		$offset=$search['offset'];
+	$offset=$search['offset'];
 		$per_page=$search['per_page'];
 		
 		$tables = '07COMPROBACION';
-		$tables2 = '07XML';		
+		$tables2 = '07XML';			
 		$tables5 = '04altaeventos';	        	
 		$joinAltaEventos = " LEFT JOIN $tables5 ON $tables.NUMERO_EVENTO = $tables5.NUMERO_EVENTO AND $tables.NOMBRE_EVENTO = $tables5.NOMBRE_EVENTO ";
 		$sWhereCC =" ON 07COMPROBACION.id = 07XML.`ultimo_id` ".$joinAltaEventos;
+		
+
+		$sWhere = "";
 		$sWhere2="";$sWhere3="";
 		
 		
@@ -394,15 +392,13 @@ IF($sWhere2!=""){
 			//$sWhereCC = substr($sWhereCC,0,-4);			
 		$sWhere3  = ' '.$sWhereCC.' ';
 		}
-		$sWhere3campo.=" $tables.id desc ";		
-$sWhere3 .= " order by ".$sWhere3campo;
+		$orderBy = " order by $tables.id desc ";
 
-		//$sWhere3.="  order by $tables.id desc ";
-//echo $sql="SELECT $campos FROM  $tables $sWhere $sWhere3 LIMIT $offset,$per_page";
-		 $sql="SELECT $campos , 07COMPROBACION.id as 07COMPROBACIONid FROM $tables LEFT JOIN $tables2 $sWhere $sWhere3 LIMIT $offset,$per_page";
+
+ $sql="SELECT $campos , 07COMPROBACION.id as 07COMPROBACIONid FROM $tables LEFT JOIN $tables2 $sWhere $sWhere3 $orderBy LIMIT $offset,$per_page";
 		
 		$query=$this->mysqli->query($sql);
-		$sql1="SELECT $campos , 07COMPROBACION.id as 07COMPROBACIONid FROM  $tables LEFT JOIN $tables2 $sWhere $sWhere3 ";
+		$sql1="SELECT COUNT(*) as total FROM  $tables LEFT JOIN $tables2 $sWhere $sWhere3";
 		$nums_row=$this->countAll($sql1);
 		//Set counter
 		$this->setCounter($nums_row);
