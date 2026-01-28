@@ -19,10 +19,23 @@ class orders extends accesoclase {
 	private $matchCache = [];
 	private $matchAnyCache = [];
 	private $tarjetaCache = [];
+	private $plantillaFiltroCache = [];
+
 
 	function __construct(){
 		$this->mysqli = $this->db();
     }
+	public function plantilla_filtro($nombreTabla, $campo, $altaeventos, $departamento) {
+		$cacheKey = $nombreTabla.'|'.$campo.'|'.$altaeventos.'|'.$departamento;
+		if (isset($this->plantillaFiltroCache[$cacheKey])) {
+			return $this->plantillaFiltroCache[$cacheKey];
+		}
+
+		$resultado = parent::plantilla_filtro($nombreTabla, $campo, $altaeventos, $departamento);
+		$this->plantillaFiltroCache[$cacheKey] = $resultado;
+
+		return $resultado;
+	}
 		/*se ocupa en MATCH_BBVA.php regresa checked*/
 public function validaexistematch2COMPROBACION($IpMATCHDOCUMENTOS2,$TARJETA){
 		$cacheKey = $IpMATCHDOCUMENTOS2.'|'.$TARJETA;
