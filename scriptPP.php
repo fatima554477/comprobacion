@@ -328,6 +328,15 @@ const numberWithCommas = (x) => {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+function actualizarFechaDeLlenado() {
+	const fechaInput = document.querySelector('input[name="FECHA_DE_LLENADO"]');
+	if (!fechaInput) {
+		return;
+	}
+	const now = new Date();
+	const pad = (value) => value.toString().padStart(2, '0');
+	fechaInput.value = `${pad(now.getDate())}-${pad(now.getMonth() + 1)}-${now.getFullYear()} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+}
 
 
 
@@ -345,6 +354,7 @@ $(document).ready(function(){
 	
 $("#enviarPAGOPROVEEDORES").click(function(){
 	/*nuevo script pbajar archivos y datos*/
+	actualizarFechaDeLlenado();
 const formData = new FormData($('#pagoaproveedoresform')[0]);
 
 $.ajax({

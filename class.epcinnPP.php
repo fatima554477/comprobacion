@@ -569,10 +569,9 @@ if($row['ultimo_id']==0 or $row['ultimo_id']==''){
 		$TImpuestosRetenidosIVA = str_replace(',','',$TImpuestosRetenidosIVA);		
 		$TImpuestosRetenidosISR = str_replace(',','',$TImpuestosRetenidosISR);		
 		$descuentos = str_replace(',','',$descuentos);		
-	//hiddensubefactura
-		/*$conn = $this->db(); STATUS_DE_PAGO
-		$existe = $this->revisar_pagoproveedor();
-		$session = isset($_SESSION['idCG'])?$_SESSION['idCG']:''; */
+    $NOMBRE_EVENTO               = mysqli_real_escape_string($conn, $NOMBRE_EVENTO);
+    $MOTIVO_GASTO        = mysqli_real_escape_string($conn, $MOTIVO_GASTO);
+    $OBSERVACIONES_1 = mysqli_real_escape_string($conn, $OBSERVACIONES_1);
 		
 		$conn = $this->db();
 
