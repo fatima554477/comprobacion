@@ -24,7 +24,7 @@ if($identioficador != '')
 $queryVISTAPREV = $pagoproveedores->Listado_pagoproveedor2($identioficador);
 
 ?>
-<div id="mensaje"></div>
+
 <div id="actualizatabla">
 <?php
    while($row = mysqli_fetch_array($queryVISTAPREV))
@@ -59,7 +59,7 @@ $STATUS_DE_PAGO = '<select required="" name="STATUS_DE_PAGO">
 		}
         
         
-        if($rowDOCTOS["ADJUNTAR_FACTURA_XML"]!=""){$ADJUNTAR_FACTURA_XML .=  "<a target='_blank' href='includes/archivos/".$rowDOCTOS["ADJUNTAR_FACTURA_XML"]."'>Visualizar!</a>"."  <span > ".$rowDOCTOS['fechaingreso']."</span>".'<br/>'; 
+        if($rowDOCTOS["ADJUNTAR_FACTURA_XML"]!=""){$ADJUNTAR_FACTURA_XML .=  "<a target='_blank' href='includes/archivos/".$rowDOCTOS["ADJUNTAR_FACTURA_XML"]."'>Visualizar!</a>"." <span id='".$rowDOCTOS['id']."' class='view_dataSBborrar2' style='cursor:pointer;color:blue;'>Borrar!</span>  <span > ".$rowDOCTOS['fechaingreso']."</span>".'<br/>'; 
 		}	else{
 			
 			//$ADJUNTAR_FACTURA_XML = "";
@@ -166,19 +166,56 @@ $STATUS_DE_PAGO = '<select required="" name="STATUS_DE_PAGO">
 
 ?>
 </div>
+
 <?php
+// Construye el listado de ejecutivos para mostrar nombre y apellidos en lugar del ID
+$ejecutivoTarjetaSelect = '<select class="form-select" id="EJECUTIVOTARJETA" name="EJECUTIVOTARJETA" required>';
+$ejecutivoTarjetaSelect .= '<option value="">SELECCIONA UNA OPCIÓN</option>';
+
+$ejecutivoActual = isset($row['EJECUTIVOTARJETA']) ? trim($row['EJECUTIVOTARJETA']) : '';
+$ejecutivoEncontrado = false;
+
+$queryper = $conexion->colaborador_generico_bueno();
+while($rowEjecutivo = mysqli_fetch_array($queryper)) {
+    $idRelacion = isset($rowEjecutivo['idRelacion']) ? trim($rowEjecutivo['idRelacion']) : '';
+    $nombreCompleto = trim(
+        $rowEjecutivo['NOMBRE_1'].' '.
+        $rowEjecutivo['NOMBRE_2'].' '.
+        $rowEjecutivo['APELLIDO_PATERNO'].' '.
+        $rowEjecutivo['APELLIDO_MATERNO']
+    );
+
+    $idSanitizado = htmlspecialchars($idRelacion, ENT_QUOTES, 'UTF-8');
+    $nombreSanitizado = htmlspecialchars($nombreCompleto, ENT_QUOTES, 'UTF-8');
+
+    $selected = '';
+    if($ejecutivoActual === $idRelacion){
+        $selected = ' selected';
+        $ejecutivoEncontrado = true;
+    }
+
+    $ejecutivoTarjetaSelect .= '<option value="'.$idSanitizado.'"'.$selected.'>'.$nombreSanitizado.'</option>';
+}
+
+// Si el ID guardado no está en la lista, lo mostramos como opción seleccionada para mantener el dato editable
+if(!$ejecutivoEncontrado && $ejecutivoActual !== ''){
+    $ejecutivoTarjetaSelect .= '<option value="'.htmlspecialchars($ejecutivoActual, ENT_QUOTES, 'UTF-8').'" selected>'.htmlspecialchars($ejecutivoActual, ENT_QUOTES, 'UTF-8').' - SIN INFORMACIÓN</option>';
+}
+
+$ejecutivoTarjetaSelect .= '</select>';
 
 
  $output .= '<div id="respuestaser"></div>
- <form  id="ListadoPAGOPROVEEform"> 
-      <div class="table-responsive">  
+ <form  id="ListadoPAGOPROVEEform">
+      <div class="table-responsive">
            <table class="table table-bordered">';
- 
+
 $campos_xml = '';
 
 if($row2xml["Version"]=='no' or $row2xml["Version"]==''){
 
 $campos_xml = '
+
 
 <!--aqui empieza la lectura BD a XML-->
 <!--aqui empieza la lectura BD a XML-->
@@ -417,12 +454,12 @@ if($row["FECHA_DE_LLENADO"]==''){
 
 <tr style="background: #c3f5d9">
 <td width="30%" style="font-weight:bold;" ><label>IMPUESTOS RETENIDOS  IVA:</label></td>
-<td width="70%"><input type="text" name="TImpuestosRetenidosIVA"  value="'.$row["TImpuestosRetenidosIVA"].'"></td>
+<td width="70%"><input type="text" name="TImpuestosRetenidosIVA" id="montoRetenidoIVA" value="'.$row["TImpuestosRetenidosIVA"].'"></td>
 </tr> 
 
 <tr style="background: #c3f5d9">
 <td width="30%" style="font-weight:bold;" ><label>IMPUESTOS RETENIDOS  ISR:</label></td>
-<td width="70%"><input type="text" name="TImpuestosRetenidosISR"  value="'.$row["TImpuestosRetenidosISR"].'"></td>
+<td width="70%"><input type="text" name="TImpuestosRetenidosISR" id="montoRetenidoISR"  value="'.$row["TImpuestosRetenidosISR"].'"></td>
 </tr> 
 
 
@@ -442,7 +479,7 @@ if($row["FECHA_DE_LLENADO"]==''){
 
 <tr style="background: #c3f5d9">
 <td width="30%" style="font-weight:bold;" ><label>DESCUENTO:</label></td>
-<td width="70%"><input type="text" name="descuentos"  value="'.$row["descuentos"].'"></td>
+<td width="70%"><input type="text" name="descuentos" id="montoDescuentos" value="'.$row["descuentos"].'"></td>
 </tr> 
 
 
@@ -587,9 +624,19 @@ if($row["FECHA_DE_LLENADO"]==''){
 <td width="30%" style="font-weight:bold;" ><label>SUB CLASIFICACIÓN GENERAL</label></td>
 <td width="70%"><input type="text" name="SUB_GENERAL" value="'.$row["SUB_GENERAL"].'"></td>
 </tr>
+
 <tr>
-<td width="30%" style="font-weight:bold;" ><label>COMPLEMENTOS DE PAGO  (FORMATO PDF)</label></td>
-<td width="70%">	<div id="drop_file_zone" ondrop="upload_file2(event,\'COMPLEMENTOS_PAGO_PDF\')" ondragover="return false" style="width:300px;">
+<td width="30%" style="font-weight:bold;background:#A3ED8C" ><label>COMPLEMENTO DE PAGO &nbsp;<a style="color:red;font:12px">(FORMATO  XML)</a></label></td>
+<td width="70%" style="font-weight:bold;background:#A3ED8C" >	<div id="drop_file_zone" ondrop="upload_file2(event,\'COMPLEMENTOS_PAGO_XML\')" ondragover="return false" style="width:300px;">
+<p>Suelta aquí o busca tu archivo</p>
+<p><input class="form-control form-control-sm" id="COMPLEMENTOS_PAGO_XML" type="text" onkeydown="return false" onclick="file_explorer2(\'COMPLEMENTOS_PAGO_XML\');" style="width:250px;" VALUE="'.$row["COMPLEMENTOS_PAGO_XML"] .' " required /></p>
+<input type="file" name="COMPLEMENTOS_PAGO_XML" id="nono"/>
+<div id="3COMPLEMENTOS_PAGO_XML">
+'.$COMPLEMENTOS_PAGO_XML.'</td>
+</tr> 
+<tr>
+<td width="30%" style="font-weight:bold;background:#A3ED8C"  ><label>COMPLEMENTO DE PAGO  (FORMATO PDF)</label></td>
+<td width="70%"  style="font-weight:bold;background:#A3ED8C" >	<div id="drop_file_zone" ondrop="upload_file2(event,\'COMPLEMENTOS_PAGO_PDF\')" ondragover="return false" style="width:300px;">
 <p>Suelta aquí o busca tu archivo</p>
 <p><input class="form-control form-control-sm" id="COMPLEMENTOS_PAGO_PDF" type="text" onkeydown="return false" onclick="file_explorer2(\'COMPLEMENTOS_PAGO_PDF\');" style="width:250px;" VALUE="'.$row["COMPLEMENTOS_PAGO_PDF"] .' " required /></p>
 <input type="file" name="COMPLEMENTOS_PAGO_PDF" id="nono"/>
@@ -597,15 +644,7 @@ if($row["FECHA_DE_LLENADO"]==''){
 '.$COMPLEMENTOS_PAGO_PDF.'</td>
 </tr> 
 
-<tr>
-<td width="30%" style="font-weight:bold;" ><label>COMPLEMENTOS DE PAGO (FORMATO XML)</label></td>
-<td width="70%">	<div id="drop_file_zone" ondrop="upload_file2(event,\'COMPLEMENTOS_PAGO_XML\')" ondragover="return false" style="width:300px;">
-<p>Suelta aquí o busca tu archivo</p>
-<p><input class="form-control form-control-sm" id="COMPLEMENTOS_PAGO_XML" type="text" onkeydown="return false" onclick="file_explorer2(\'COMPLEMENTOS_PAGO_XML\');" style="width:250px;" VALUE="'.$row["COMPLEMENTOS_PAGO_XML"] .' " required /></p>
-<input type="file" name="COMPLEMENTOS_PAGO_XML" id="nono"/>
-<div id="3COMPLEMENTOS_PAGO_XML">
-'.$COMPLEMENTOS_PAGO_XML.'</td>
-</tr> 
+
 
 <tr>
 <td width="30%" style="font-weight:bold;" ><label>ADJUNTAR CANCELACIONES (FORMATO PDF)</label></td>
@@ -686,7 +725,10 @@ if($row["FECHA_DE_LLENADO"]==''){
 <td width="30%" style="font-weight:bold;" ><label>PÓLIZA NÚMERO</label></td>
 <td width="70%"><input type="text" name="POLIZA_NUMERO" value="'.$row["POLIZA_NUMERO"].'"></td>
 </tr>
-<input type="hidden" name="EJECUTIVOTARJETA" value="'.$row["EJECUTIVOTARJETA"].'">
+<tr>
+<td width="30%" style="font-weight:bold;" ><label>NOMBRE DEL EJECUTIVO TITULAR DE LA TARJETA</label></td>
+<td width="70%">'.$ejecutivoTarjetaSelect.'</td>
+</tr>
 
 
 <tr>
@@ -740,7 +782,7 @@ if($row["FECHA_DE_LLENADO"]==''){
 
      ';
     }
-    $output .= '</table></div>
+    $output .= '</table><div id="mensaje"></div></div>
 
 	</form>';
     echo $output;
@@ -764,16 +806,19 @@ if($row["FECHA_DE_LLENADO"]==''){
 	    };
 	}
 	
-	// Función para calcular el total automáticamente
+// Función para calcular el total automáticamente
 function calcularTotal() {
     // Obtener valores
     const montoEvento = parseFloat(document.getElementById('montoTotalEvento').value) || 0;
     const montoAvion = parseFloat(document.getElementById('montoTotalAvion').value) || 0;
     const montopropina = parseFloat(document.getElementById('montoTotalpropina').value) || 0;
     const montohospedaje = parseFloat(document.getElementById('montoTotalhospedaje').value) || 0;
+    const montoRetenidoIVA = parseFloat(document.getElementById('montoRetenidoIVA').value) || 0;
+    const montoRetenidoISR = parseFloat(document.getElementById('montoRetenidoISR').value) || 0;
+    const montoDescuentos = parseFloat(document.getElementById('montoDescuentos').value) || 0;
     
     // Calcular suma
-    const total = montoEvento + montoAvion + montopropina + montohospedaje;
+    const total = montoEvento + montoAvion + montopropina + montohospedaje - montoRetenidoIVA - montoRetenidoISR - montoDescuentos;
     
     // Asignar resultado (con 2 decimales)
     document.getElementById('montoTotalEventoResultado').value = total.toFixed(2);
@@ -787,6 +832,9 @@ document.getElementById('montoTotalEvento').addEventListener('input', calcularTo
 document.getElementById('montoTotalAvion').addEventListener('input', calcularTotal);
 document.getElementById('montoTotalpropina').addEventListener('input', calcularTotal);
 document.getElementById('montoTotalhospedaje').addEventListener('input', calcularTotal);
+document.getElementById('montoRetenidoIVA').addEventListener('input', calcularTotal);
+document.getElementById('montoRetenidoISR').addEventListener('input', calcularTotal);
+document.getElementById('montoDescuentos').addEventListener('input', calcularTotal);
 
 	function ajax_file_upload2(file_obj,nombre) {
 	    if(file_obj != undefined) {
