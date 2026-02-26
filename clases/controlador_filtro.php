@@ -248,7 +248,9 @@ if($action == "ajax"){
 
 <th style="background:#c9e8e8">AUDITORÍA</th>
 <th style="background:#c9e8e8">CONTABILIDAD</th>
-
+<?php if ($database->variablespermisos('', 'rechazo_pago', 'ver') == 'si') { ?>
+<th style="background:#c9e8e8">RECHAZADO</th>
+<?php } ?>
 
 
 <?php 
@@ -562,7 +564,9 @@ if($database->plantilla_filtro($nombreTabla,"TOTAL_IMPUESTOS_RETENIDOS",$altaeve
 <td style="background:#c9e8e8"></td>
 <td style="background:#c9e8e8"></td>
 <td style="background:#c9e8e8"></td>
-
+<?php if ($database->variablespermisos('', 'rechazo_pago', 'ver') == 'si') { ?>
+<td style="background:#c9e8e8"></td>
+<?php } ?>
 
 <?php  
 if($database->plantilla_filtro($nombreTabla,"FECHA_DE_LLENADO",$altaeventos,$DEPARTAMENTO)=="si"){ ?><td style="background:#c9e8e8"><input type="text" class="form-control" id="FECHA_DE_LLENADO_1" value="<?php 
@@ -1047,57 +1051,63 @@ else {
         <?php echo $row['07COMPROBACIONid']; $colspan += 1; ?>
     </td>
 <?php
+if (!function_exists('renderDocumentLinks')) {
+	function renderDocumentLinks($rawValue) {
+		if (!isset($rawValue) || trim((string)$rawValue) === '') {
+			return '';
+		}
+
+		$links = '';
+		$files = preg_split('/\s*,\s*/', (string)$rawValue);
+		foreach ($files as $file) {
+			$file = trim(html_entity_decode((string)$file));
+			if ($file === '') {
+				continue;
+			}
+
+			if (preg_match('#^https?://#i', $file) === 1) {
+				$filePath = $file;
+			} else {
+				$fileNormalizado = ltrim($file, '/');
+
+				if (stripos($fileNormalizado, 'includes/archivos/') === 0) {
+					$filePath = $fileNormalizado;
+				} else {
+					$filePath = 'includes/archivos/' . $fileNormalizado;
+				}
+
+				$partesPath = array_map('rawurlencode', explode('/', $filePath));
+				$filePath = implode('/', $partesPath);
+			}
+
+			$links .= '<a href="' . $filePath . '" target="_blank">Ver!</a><br/>';
+		}
+
+		return $links;
+	}
+}
+
 $ADJUNTAR_FACTURA_PDF = '';$ADJUNTAR_FACTURA_XML='';$ADJUNTAR_COTIZACION='';$CONPROBANTE_TRANSFERENCIA='';$ADJUNTAR_ARCHIVO_1='';$COMPLEMENTOS_PAGO_PDF='';
 $COMPLEMENTOS_PAGO_XML='';$CANCELACIONES_PDF='';$CANCELACIONES_XML='';$ADJUNTAR_FACTURA_DE_COMISION_PDF='';$ADJUNTAR_FACTURA_DE_COMISION_XML='';$CALCULO_DE_COMISION='';
 $COMPROBANTE_DE_DEVOLUCION='';$NOTA_DE_CREDITO_COMPRA='';$FOTO_ESTADO_PROVEE11='';$ADJUNTAR_ARCHIVO_1='';
 $querycontrasDOCTOS = $database->Listado_subefacturaDOCTOS($row['07COMPROBACIONid']);
 while($rowDOCTOS = mysqli_fetch_array($querycontrasDOCTOS))
 {
-	if($rowDOCTOS["ADJUNTAR_FACTURA_PDF"]!=''){
-		$ADJUNTAR_FACTURA_PDF .= '<a href="includes/archivos/'.$rowDOCTOS["ADJUNTAR_FACTURA_PDF"].'" target ="_blank">Ver!</a><br/>';
-	}
-	if($rowDOCTOS["ADJUNTAR_FACTURA_XML"]!=''){
-		$ADJUNTAR_FACTURA_XML .= '<a href="includes/archivos/'.$rowDOCTOS["ADJUNTAR_FACTURA_XML"].'" target ="_blank">Ver!</a><br/>';
-	}
-	if($rowDOCTOS["ADJUNTAR_COTIZACION"]!=''){
-		$ADJUNTAR_COTIZACION .= '<a href="includes/archivos/'.$rowDOCTOS["ADJUNTAR_COTIZACION"].'" target ="_blank">Ver!</a><br/>';
-	}
-	if($rowDOCTOS["CONPROBANTE_TRANSFERENCIA"]!=''){
-		$CONPROBANTE_TRANSFERENCIA .= '<a href="includes/archivos/'.$rowDOCTOS["CONPROBANTE_TRANSFERENCIA"].'" target ="_blank">Ver!</a><br/>';
-	}
-	if($rowDOCTOS["COMPLEMENTOS_PAGO_PDF"]!='' ){
-		$COMPLEMENTOS_PAGO_PDF .= '<a href="includes/archivos/'.$rowDOCTOS["COMPLEMENTOS_PAGO_PDF"].'" target ="_blank">Ver!</a><br/>';
-	}
-	if($rowDOCTOS["COMPLEMENTOS_PAGO_XML"]!=''){
-		$COMPLEMENTOS_PAGO_XML .= '<a href="includes/archivos/'.$rowDOCTOS["COMPLEMENTOS_PAGO_XML"].'" target ="_blank">Ver!</a><br/>';
-	}
-	if($rowDOCTOS["CANCELACIONES_PDF"]!=''){
-		$CANCELACIONES_PDF .= '<a href="includes/archivos/'.$rowDOCTOS["CANCELACIONES_PDF"].'" target ="_blank">Ver!</a><br/>';
-	}
-	if($rowDOCTOS["CANCELACIONES_XML"]!=''){
-		$CANCELACIONES_XML .= '<a href="includes/archivos/'.$rowDOCTOS["CANCELACIONES_XML"].'" target ="_blank">Ver!</a><br/>';
-	}
-	if($rowDOCTOS["ADJUNTAR_FACTURA_DE_COMISION_PDF"]!=''){
-		$ADJUNTAR_FACTURA_DE_COMISION_PDF .= '<a href="includes/archivos/'.$rowDOCTOS["ADJUNTAR_FACTURA_DE_COMISION_PDF"].'" target ="_blank">Ver!</a><br/>';
-	}
-	if($rowDOCTOS["ADJUNTAR_FACTURA_DE_COMISION_XML"]!=''){
-		$ADJUNTAR_FACTURA_DE_COMISION_XML .= '<a href="includes/archivos/'.$rowDOCTOS["ADJUNTAR_FACTURA_DE_COMISION_XML"].'" target ="_blank">Ver!</a><br/>';
-	}
-	if($rowDOCTOS["CALCULO_DE_COMISION"]!=''){
-		$CALCULO_DE_COMISION .= '<a href="includes/archivos/'.$rowDOCTOS["CALCULO_DE_COMISION"].'" target ="_blank">Ver!</a><br/>';
-	}
-	if($rowDOCTOS["COMPROBANTE_DE_DEVOLUCION"]!=''){
-		$COMPROBANTE_DE_DEVOLUCION .= '<a href="includes/archivos/'.$rowDOCTOS["COMPROBANTE_DE_DEVOLUCION"].'" target ="_blank">Ver!</a><br/>';
-	}
-	if($rowDOCTOS["NOTA_DE_CREDITO_COMPRA"]!=''){
-		$NOTA_DE_CREDITO_COMPRA .= '<a href="includes/archivos/'.$rowDOCTOS["NOTA_DE_CREDITO_COMPRA"].'" target ="_blank">Ver!</a><br/>';
-	}
-	if($rowDOCTOS["FOTO_ESTADO_PROVEE11"]!=''){
-		$FOTO_ESTADO_PROVEE11 .= '<a href="includes/archivos/'.$rowDOCTOS["11"].'" target ="_blank">Ver!</a><br/>';
-	}
-	if($rowDOCTOS["ADJUNTAR_ARCHIVO_1"]!=''){
-		$ADJUNTAR_ARCHIVO_1 .= '<a href="includes/archivos/'.$rowDOCTOS["ADJUNTAR_ARCHIVO_1"].'" target ="_blank">Ver!</a><br/>';
-	}
+	$ADJUNTAR_FACTURA_PDF .= renderDocumentLinks($rowDOCTOS["ADJUNTAR_FACTURA_PDF"]);
+	$ADJUNTAR_FACTURA_XML .= renderDocumentLinks($rowDOCTOS["ADJUNTAR_FACTURA_XML"]);
+	$ADJUNTAR_COTIZACION .= renderDocumentLinks($rowDOCTOS["ADJUNTAR_COTIZACION"]);
+	$CONPROBANTE_TRANSFERENCIA .= renderDocumentLinks($rowDOCTOS["CONPROBANTE_TRANSFERENCIA"]);
+	$COMPLEMENTOS_PAGO_PDF .= renderDocumentLinks($rowDOCTOS["COMPLEMENTOS_PAGO_PDF"]);
+	$COMPLEMENTOS_PAGO_XML .= renderDocumentLinks($rowDOCTOS["COMPLEMENTOS_PAGO_XML"]);
+	$CANCELACIONES_PDF .= renderDocumentLinks($rowDOCTOS["CANCELACIONES_PDF"]);
+	$CANCELACIONES_XML .= renderDocumentLinks($rowDOCTOS["CANCELACIONES_XML"]);
+	$ADJUNTAR_FACTURA_DE_COMISION_PDF .= renderDocumentLinks($rowDOCTOS["ADJUNTAR_FACTURA_DE_COMISION_PDF"]);
+	$ADJUNTAR_FACTURA_DE_COMISION_XML .= renderDocumentLinks($rowDOCTOS["ADJUNTAR_FACTURA_DE_COMISION_XML"]);
+	$CALCULO_DE_COMISION .= renderDocumentLinks($rowDOCTOS["CALCULO_DE_COMISION"]);
+	$COMPROBANTE_DE_DEVOLUCION .= renderDocumentLinks($rowDOCTOS["COMPROBANTE_DE_DEVOLUCION"]);
+	$NOTA_DE_CREDITO_COMPRA .= renderDocumentLinks($rowDOCTOS["NOTA_DE_CREDITO_COMPRA"]);
+	$FOTO_ESTADO_PROVEE11 .= renderDocumentLinks($rowDOCTOS["FOTO_ESTADO_PROVEE11"]);
+	$ADJUNTAR_ARCHIVO_1 .= renderDocumentLinks($rowDOCTOS["ADJUNTAR_ARCHIVO_1"]);
 }
 ?>
 
@@ -1250,6 +1260,101 @@ $colspan += 1; ?>/>
 
 </td>
 
+<?php if ($database->variablespermisos('', 'rechazo_pago', 'ver') == 'si') { ?>
+
+<td style="text-align:center; background:
+
+    <?php $statusRechazado = isset($row["STATUS_RECHAZADO"]) ? $row["STATUS_RECHAZADO"] : 'no'; echo ($statusRechazado == 'si') ? '#ceffcc' : '#e9d8ee'; ?>;"
+
+    id="color_RECHAZADO<?php echo $row["07COMPROBACIONid"]; ?>">
+
+
+
+    <?php
+
+         $motivoRechazo = $database->obtener_motivo_rechazo($row["07COMPROBACIONid"]);
+        $statusVentasAutorizado = isset($row["STATUS_VENTAS"]) && $row["STATUS_VENTAS"] == 'si';
+        $mostrarAgregarRechazo = ($statusRechazado == 'si' && $motivoRechazo == '');
+        $mostrarVerRechazo = ($statusRechazado == 'si' && $motivoRechazo != '');
+
+      
+        $permisoguardarRechazo = $database->variablespermisos('', 'rechazo_pago', 'guardar') == 'si';
+        $permisomodificarRechazo = $database->variablespermisos('', 'rechazo_pago', 'modificar') == 'si';
+
+    ?>
+
+    <input type="hidden" id="motivo_rechazo_<?php echo $row["07COMPROBACIONid"]; ?>" value="<?php echo htmlspecialchars($motivoRechazo, ENT_QUOTES, 'UTF-8'); ?>" />
+
+
+
+    <input type="checkbox"
+
+        style="width:30px; cursor:pointer;"
+
+        class="form-check-input"
+
+        id="STATUS_RECHAZADO<?php echo $row["07COMPROBACIONid"]; ?>"
+
+        name="STATUS_RECHAZADO<?php echo $row["07COMPROBACIONid"]; ?>"
+
+        value="<?php echo $row["07COMPROBACIONid"]; ?>"
+
+        <?php
+
+   if ($statusVentasAutorizado) {
+            echo 'disabled style="cursor:not-allowed;" title="No se puede rechazar: autorizado por ventas"';
+        } elseif ($statusRechazado == 'si') {
+            if($permisomodificarRechazo){
+                echo 'checked onclick="STATUS_RECHAZADO('.$row["07COMPROBACIONid"].')" title="Pago rechazado"';
+            } else {
+                echo 'checked disabled style="cursor:not-allowed;" title="Pago rechazado"';
+            }
+        } else {
+            if($permisoguardarRechazo || $permisomodificarRechazo){
+                echo 'onclick="STATUS_RECHAZADO('.$row["07COMPROBACIONid"].')"';
+            } else {
+                echo 'disabled style="cursor:not-allowed;" title="Sin permiso para modificar"';
+            }
+        }
+
+        ?>
+
+    />
+
+
+
+        <?php if($permisoguardarRechazo || $permisomodificarRechazo){ ?>
+
+   <button type="button" title="agregar!"
+
+            id="agregar_rechazo_<?php echo $row['07COMPROBACIONid']; ?>"
+
+            data-rechazo-id="<?php echo $row['07COMPROBACIONid']; ?>"
+
+                style="border:none;background:transparent;cursor:pointer;color:#007bff;font-size:14px;<?php echo $mostrarAgregarRechazo ? '' : 'display:none;'; ?>"
+
+            onclick="abrirFormularioRechazo(<?php echo $row['07COMPROBACIONid']; ?>)">agregar <br>motivo</button>
+
+    
+
+<?php } ?>
+
+
+    <button type="button" title="Ver motivo"
+      id="ver_rechazo_<?php echo $row['07COMPROBACIONid']; ?>"
+
+        data-rechazo-id="<?php echo $row['07COMPROBACIONid']; ?>"
+
+       style="border:none;background:transparent;cursor:pointer;color:#28a745;font-size:16px;<?php echo $mostrarVerRechazo ? '' : 'display:none;'; ?>"
+
+        onclick="verMotivoRechazo(<?php echo $row['07COMPROBACIONid']; ?>)">ver</button>
+
+
+    <?php $colspan += 1; ?>
+
+</td>
+
+<?php } ?>
 
 <?php  
 if ($database->plantilla_filtro($nombreTabla,"FECHA_DE_LLENADO",$altaeventos,$DEPARTAMENTO)=="si") {
