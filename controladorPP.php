@@ -129,8 +129,9 @@ if($RECHAZADO_id!='' and ($RECHAZADO_text=='si' or $RECHAZADO_text=='no') ){
 
 echo $pagoproveedores->ACTUALIZA_RECHAZADO($RECHAZADO_id, $RECHAZADO_text);
 
-}
+exit;
 
+}
 
 
 $RECHAZO_MOTIVO_id = isset($_POST["RECHAZO_MOTIVO_id"])?$_POST["RECHAZO_MOTIVO_id"]:"";
