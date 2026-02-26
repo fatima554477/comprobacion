@@ -118,6 +118,51 @@ if($CHECKBOX_id != '' && ($CHECKBOX_text == 'si' || $CHECKBOX_text == 'no')) {
 }
 
 
+
+$RECHAZADO_id = isset($_POST["RECHAZADO_id"])?$_POST["RECHAZADO_id"]:"";
+
+$RECHAZADO_text = isset($_POST["RECHAZADO_text"])?$_POST["RECHAZADO_text"]:"";
+
+
+
+if($RECHAZADO_id!='' and ($RECHAZADO_text=='si' or $RECHAZADO_text=='no') ){
+
+echo $pagoproveedores->ACTUALIZA_RECHAZADO($RECHAZADO_id, $RECHAZADO_text);
+
+}
+
+
+
+$RECHAZO_MOTIVO_id = isset($_POST["RECHAZO_MOTIVO_id"])?$_POST["RECHAZO_MOTIVO_id"]:"";
+
+$RECHAZO_MOTIVO_text = isset($_POST["RECHAZO_MOTIVO_text"])?$_POST["RECHAZO_MOTIVO_text"]:"";
+
+
+
+if($RECHAZO_MOTIVO_id!='' and trim($RECHAZO_MOTIVO_text) != ''){
+
+	echo $pagoproveedores->guardar_motivo_rechazo($RECHAZO_MOTIVO_id, $RECHAZO_MOTIVO_text);
+
+	exit;
+
+}
+
+
+
+$RECHAZO_MOTIVO_VER_id = isset($_POST["RECHAZO_MOTIVO_VER_id"])?$_POST["RECHAZO_MOTIVO_VER_id"]:"";
+
+if($RECHAZO_MOTIVO_VER_id!=''){
+
+	echo $pagoproveedores->obtener_motivo_rechazo($RECHAZO_MOTIVO_VER_id);
+
+	exit;
+
+}
+
+
+
+
+
 $RESPONSABLE_EVENTO_id = isset($_POST["RESPONSABLE_EVENTO_id"])?$_POST["RESPONSABLE_EVENTO_id"]:"";
 $RESPONSABLE_text = isset($_POST["RESPONSABLE_text"])?$_POST["RESPONSABLE_text"]:"";
 
@@ -243,6 +288,19 @@ $DescripcionConcepto = isset($_POST["DescripcionConcepto"])?$_POST["DescripcionC
 $Cantidad = isset($_POST["Cantidad"])?$_POST["Cantidad"]:"";
 $ClaveUnidad = isset($_POST["ClaveUnidad"])?$_POST["ClaveUnidad"]:"";
 $ClaveProdServ = isset($_POST["ClaveProdServ"])?$_POST["ClaveProdServ"]:"";
+
+if($IPpagoprovee != '' && ($NOMBRE_EVENTO == '' || $MOTIVO_GASTO == '')){
+	$resultadoActual = $pagoproveedores->Listado_pagoproveedor2($IPpagoprovee);
+	$registroActual = mysqli_fetch_array($resultadoActual, MYSQLI_ASSOC);
+	if($registroActual){
+		if($NOMBRE_EVENTO == '' && isset($registroActual["NOMBRE_EVENTO"])){
+			$NOMBRE_EVENTO = $registroActual["NOMBRE_EVENTO"];
+		}
+		if($MOTIVO_GASTO == '' && isset($registroActual["MOTIVO_GASTO"])){
+			$MOTIVO_GASTO = $registroActual["MOTIVO_GASTO"];
+		}
+	}
+}
 
 if( $MOTIVO_GASTO == "" or $EJECUTIVOTARJETA == "" or $FECHA_A_DEPOSITAR == ""){
 	

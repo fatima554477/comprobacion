@@ -77,7 +77,7 @@ $variablequery = mysqli_query($conn,$variable);
 
 	public function ultimopago($filtro){
 		$conn = $this->db();
-		$variable = "select * from 02SUBETUFACTURA where NUMERO_EVENTO = '".$filtro."' ";
+		$variable = "select * from 07COMPROBACION where NUMERO_EVENTO = '".$filtro."' ";
 		$resultado = 0;
 		$variablequery = mysqli_query($conn,$variable);
 		while($row = mysqli_fetch_array($variablequery, MYSQLI_ASSOC)){
@@ -284,89 +284,7 @@ if($row['ultimo_id']==0 or $row['ultimo_id']==''){
 		
 	}
 
-  	/*public function guardarxmlDB($ultimo_id,$conn){
-	$conexion2 = new herramientas();
-	$regreso = $this->variable_SUBETUFACTURA();
-	$url = __ROOT3__.'/includes/archivos/'.$regreso['ADJUNTAR_FACTURA_XML'];
-	$session = isset($_SESSION['idCG'])?$_SESSION['idCG']:'';    	
-	if( file_exists($url) ){
-	$regreso = $conexion2->lectorxml($url);
-	
-	$Version = $regreso['Version'];
-	$sello = $regreso['selo'];
-	$Certificado = $regreso['Certificado'];
-	$noCertificado = $regreso['noCertificado'];
-	$fecha = $regreso['fecha'];
-	$tipoDeComprobante = $regreso['tipoDeComprobante'];
-	$metodoDePago = $regreso['metodoDePago'];
-	$formaDePago = $regreso['formaDePago'];
-	$condicionesDePago = $regreso['condicionesDePago'];
-	$subTotal = $regreso['subTotal'];
-	$TipoCambio = $regreso['TipoCambio'];
-	$Moneda = $regreso['Moneda'];
-	$Descuento = $regreso['Descuento'];
-	$total = $regreso['total'];
-	$serie = $regreso['serie'];
-	$folio = $regreso['folio'];
-	$LugarExpedicion = $regreso['LugarExpedicion'];
-	$DescripcionConcepto = $regreso['DescripcionConcepto'];
-	
-	$rfcE = $regreso['rfcE'];					
-	$nombreE = $regreso['nombreE'];	
-	$regimenE = $regreso['regimenE'];
-	
-	$rfcR = $regreso['rfcR'];
-	$nombreR = $regreso['nombreR'];
-	$UsoCFDI = $regreso['UsoCFDI'];
-	$DomicilioFiscalReceptor = $regreso['DomicilioFiscalReceptor'];
-	$RegimenFiscalReceptor = $regreso['RegimenFiscalReceptor'];
-	
-	$UUID = $regreso['UUID'];
-	$selloCFD = $regreso['selloCFD'];
-	$noCertificadoSAT = $regreso['noCertificadoSAT'];	
-	$FechaTimbrado = $regreso['FechaTimbrado'];
-	$RfcProvCertif = $regreso['RfcProvCertif'];	
-	$TImpuestosRetenidos = $regreso['TImpuestosRetenidos'];
-	$TImpuestosTrasladados = $regreso['TImpuestosTrasladados'];
 
-	$Cantidad = $regreso['Cantidad'];
-	$ValorUnitario = $regreso['ValorUnitario'];
-	$Importe = $regreso['Importe'];
-	$ClaveProdServ = $regreso['ClaveProdServ'];
-	$Unidad = $regreso['Unidad'];
-	$Descripcion = $regreso['Descripcion'];
-	$ClaveUnidad = $regreso['ClaveUnidad'];
-	$NoIdentificacion = $regreso['NoIdentificacion'];
-	$ObjetoImp = $regreso['ObjetoImp'];
-}
-		$session = isset($_SESSION['idCG'])?$_SESSION['idCG']:'';    
-//		DescripcionConcepto = '".$Descripcion."',
-		$conn = $this->db();
-	$var3 = "INSERT INTO `07XML` (
-	`id`, `Version`, `fechaTimbrado`, `tipoDeComprobante`, 
-	`metodoDePago`, `formaDePago`, `condicionesDePago`, `subTotal`, 
-	`TipoCambio`, `Moneda`, `total`, `serie`, 
-	`folio`, `LugarExpedicion`, `rfcE`, `nombreE`, 
-	`regimenE`, `rfcR`, `nombreR`, `UsoCFDI`, 
-	`DomicilioFiscalReceptor`, `RegimenFiscalReceptor`, `UUID`, `TImpuestosRetenidos`, 
-	`TImpuestosTrasladados`,  `Descuento`, `DescripcionConcepto`,`Cantidad`,`ClaveUnidad`,`ClaveProdServ`,`idRelacion`, `ultimo_id`) VALUES (
-	'', '".$Version."', '".$FechaTimbrado."', '".$tipoDeComprobante."', 
-	'".$metodoDePago."', '".$formaDePago."', '".$condicionesDePago."', '".$subTotal."', 
-	'".$TipoCambio."', '".$Moneda."', '".$total."', '".$serie."', 
-	'".$folio."', '".$LugarExpedicion."', '".$rfcE."', '".$nombreE."', 
-	'".$regimenE."', '".$rfcR."', '".$nombreR."', '".$UsoCFDI."', 
-	'".$DomicilioFiscalReceptor."', '".$RegimenFiscalReceptor."', '".$UUID."', '".$TImpuestosRetenidos."', 
-	'".$TImpuestosTrasladados."', 
-	'".$Descuento."', 
-	'".$Descripcion."', 
-	'".$Cantidad."', 
-	'".$ClaveUnidad."', 
-	'".$ClaveProdServ."', '".$session."', '".$ultimo_id."'
-	);  ";	
-		mysqli_query($conn,$var3) or die('P156'.mysqli_error($conn));
-		//return "1";	
-		
-	}*/
 
 	public function guardarxmlDB2($ultimo_id,$session,$tabla, $url){
 	$conn = $this->db();
@@ -419,10 +337,26 @@ if($row['ultimo_id']==0 or $row['ultimo_id']==''){
 		$Unidad = $regreso['Unidad'];
 		$Descripcion = $regreso['Descripcion'];
 		$ClaveUnidad = $regreso['ClaveUnidad'];
-		$NoIdentificacion = $regreso['NoIdentificacion'];
-		$ObjetoImp = $regreso['ObjetoImp'];
+			$NoIdentificacion = $regreso['NoIdentificacion'];
+			$ObjetoImp = $regreso['ObjetoImp'];
 
-		$var3 = "update ".$tabla." set 
+			$valores_xml = array(
+				'Version', 'FechaTimbrado', 'tipoDeComprobante', 'metodoDePago',
+				'formaDePago', 'condicionesDePago', 'subTotal', 'TipoCambio',
+				'Moneda', 'total', 'serie', 'folio', 'LugarExpedicion', 'rfcE',
+				'nombreE', 'regimenE', 'rfcR', 'nombreR', 'UsoCFDI',
+				'DomicilioFiscalReceptor', 'RegimenFiscalReceptor', 'UUID',
+				'TImpuestosRetenidos', 'TImpuestosTrasladados', 'TuaTotalCargos',
+				'Descuento', 'TUA', 'Propina', 'Cantidad', 'ValorUnitario',
+				'Importe', 'ClaveProdServ', 'Unidad', 'Descripcion', 'ClaveUnidad',
+				'NoIdentificacion', 'session', 'ultimo_id'
+			);
+
+			foreach($valores_xml as $campo_xml){
+				$$campo_xml = mysqli_real_escape_string($conn, (string)$$campo_xml);
+			}
+
+			$var3 = "update ".$tabla." set 
 		`Version` = '".$Version."', 
 		`fechaTimbrado` = '".$FechaTimbrado."', 
 		`tipoDeComprobante` = '".$tipoDeComprobante."', 
@@ -771,7 +705,149 @@ public function PAGOPRO ($NUMERO_CONSECUTIVO_PROVEE , $NOMBRE_COMERCIAL , $RAZON
 
 
 	
-	
+		public function ACTUALIZA_RECHAZADO($idSubetufactura, $estatusRechazado){
+
+		$conn = $this->db();
+
+		$session = isset($_SESSION['idem'])?$_SESSION['idem']:'';
+
+		if($session != ''){
+
+			$valorAnterior = $this->valor_actual_campo_comprobacion($conn, $idSubetufactura, 'STATUS_RECHAZADO');
+			$valorAnteriorStatusPago = $this->valor_actual_campo_comprobacion($conn, $idSubetufactura, 'STATUS_DE_PAGO');
+
+			$camposActualizar = "STATUS_RECHAZADO = '".$estatusRechazado."'";
+			if($estatusRechazado === 'si'){
+				$camposActualizar .= ", STATUS_DE_PAGO = 'RECHAZADO'";
+			}
+
+			$var1 = "update 07COMPROBACION SET ".$camposActualizar." WHERE id = '".$idSubetufactura."'";
+
+	mysqli_query($conn,$var1) or die('P156'.mysqli_error($conn));
+
+
+			$this->registrar_cambio_estado_detallado($conn, $idSubetufactura, 'STATUS_RECHAZADO', $valorAnterior, $estatusRechazado);
+			if($estatusRechazado === 'si' && $valorAnteriorStatusPago !== 'RECHAZADO'){
+				$this->registrar_cambio_estado_detallado($conn, $idSubetufactura, 'STATUS_DE_PAGO', $valorAnteriorStatusPago, 'RECHAZADO');
+			}
+
+			return "Actualizado^".$estatusRechazado;
+
+		}else{
+
+			echo "NO HAY UN PROVEEDOR SELECCIONADO";
+
+		}
+
+	}
+
+
+
+	private function crear_tabla_rechazos_si_no_existe($conn){
+
+		$crearTabla = "CREATE TABLE IF NOT EXISTS `07COMPROBACION_RECHAZOS` (
+
+			`id` int(11) NOT NULL AUTO_INCREMENT,
+
+			`id_comprobacion` int(11) NOT NULL,
+
+			`motivo_rechazo` text,
+
+			`usuario_registro` varchar(255) DEFAULT NULL,
+
+			`fecha_registro` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+			PRIMARY KEY (`id`),
+
+			UNIQUE KEY `uniq_comprobacion` (`id_comprobacion`)
+
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
+
+		mysqli_query($conn, $crearTabla);
+
+	}
+
+
+
+	public function guardar_motivo_rechazo($idSubetufactura, $motivoRechazo){
+
+		$conn = $this->db();
+
+		$session = isset($_SESSION['idem'])?$_SESSION['idem']:'';
+
+		if($session == ''){
+
+			return "Sesion_invalida";
+
+		}
+
+
+
+		$idSubetufactura = intval($idSubetufactura);
+
+		$motivoRechazo = trim($motivoRechazo);
+
+		if($idSubetufactura <= 0 || $motivoRechazo == ''){
+
+			return "Datos_invalidos";
+
+		}
+
+
+
+		$this->crear_tabla_rechazos_si_no_existe($conn);
+
+		$motivoEscapado = mysqli_real_escape_string($conn, $motivoRechazo);
+
+		$usuario = mysqli_real_escape_string($conn, $this->nombre_usuario_bitacora());
+
+
+
+		$insert = "INSERT INTO 07COMPROBACION_RECHAZOS (id_comprobacion, motivo_rechazo, usuario_registro, fecha_registro)
+
+		VALUES ('".$idSubetufactura."', '".$motivoEscapado."', '".$usuario."', NOW())
+
+		ON DUPLICATE KEY UPDATE motivo_rechazo = VALUES(motivo_rechazo), usuario_registro = VALUES(usuario_registro), fecha_registro = NOW()";
+
+		mysqli_query($conn, $insert) or die('P156'.mysqli_error($conn));
+
+
+
+		$this->registrar_bitacora($conn, $idSubetufactura, 'RECHAZO', 'Se registró motivo de rechazo: "'.$motivoRechazo.'".', '', $this->nombre_usuario_bitacora());
+
+		return "ok";
+	}
+	public function obtener_motivo_rechazo($idSubetufactura){
+
+		$conn = $this->db();
+
+		$idSubetufactura = intval($idSubetufactura);
+
+		if($idSubetufactura <= 0){
+
+			return '';
+
+		}
+
+
+
+		$this->crear_tabla_rechazos_si_no_existe($conn);
+
+		$query = mysqli_query($conn, "SELECT motivo_rechazo FROM 07COMPROBACION_RECHAZOS WHERE id_comprobacion = '".$idSubetufactura."' LIMIT 1");
+
+		if($query){
+
+			$row = mysqli_fetch_array($query, MYSQLI_ASSOC);
+
+			if($row && isset($row['motivo_rechazo'])){
+
+				return $row['motivo_rechazo'];
+
+			}
+		}
+		return '';
+
+	}
 	
 	
 
