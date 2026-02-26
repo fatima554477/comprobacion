@@ -407,12 +407,11 @@ actualizarBotonesRechazo(RECHAZADO_id, RECHAZADO_text);
 
 			if(result[1]=='no') $('#color_RECHAZADO'+RECHAZADO_id).css('background-color', '#e9d8ee');
 
-       if(result[1] == 'si' || result[1] == 'no'){
+	        if(result[1] == 'si' || result[1] == 'no'){
 				if(result[1] == 'si' && $checkBox.data('forzarAgregarMotivo') !== 'si'){
 					$checkBox.removeData('forzarAgregarMotivo');
 				}
 				actualizarBotonesRechazo(RECHAZADO_id, result[1]);
-				load(obtenerPaginaActualFiltro());
 			}
 
 		}
@@ -577,16 +576,13 @@ function cerrarModalRechazoPago(){
 		var result = data.split('^');				
 		$('#pasarpagado2').html("Cargando...").fadeIn().delay(500).fadeOut();
 		
-		
-		if(result[1]=='si'){
+if(result[1]=='si'){
 		$('#color_VENTAS'+VENTAS_id).css('background-color', '#ceffcc');
 		$('#STATUS_RECHAZADO'+VENTAS_id)
-			.prop('checked', false)
 			.prop('disabled', true)
 			.css('cursor', 'not-allowed')
 			.attr('title', 'No se puede rechazar: autorizado por ventas');
-		$('#agregar_rechazo_'+VENTAS_id).hide();
-		$('#ver_rechazo_'+VENTAS_id).hide();
+		actualizarBotonesRechazo(VENTAS_id);
 		}
 		if(result[1]=='no'){
 		$('#color_VENTAS'+VENTAS_id).css('background-color', '#e9d8ee');

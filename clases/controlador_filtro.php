@@ -1301,14 +1301,14 @@ $colspan += 1; ?>/>
 
         <?php
 
-   if ($statusVentasAutorizado) {
-            echo 'disabled style="cursor:not-allowed;" title="No se puede rechazar: autorizado por ventas"';
-        } elseif ($statusRechazado == 'si') {
+       if ($statusRechazado == 'si') {
             if($permisomodificarRechazo){
                 echo 'checked onclick="STATUS_RECHAZADO('.$row["07COMPROBACIONid"].')" title="Pago rechazado"';
             } else {
                 echo 'checked disabled style="cursor:not-allowed;" title="Pago rechazado"';
             }
+        } elseif ($statusVentasAutorizado) {
+            echo 'disabled style="cursor:not-allowed;" title="No se puede rechazar: autorizado por ventas"';
         } else {
             if($permisoguardarRechazo || $permisomodificarRechazo){
                 echo 'onclick="STATUS_RECHAZADO('.$row["07COMPROBACIONid"].')"';
