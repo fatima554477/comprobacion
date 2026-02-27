@@ -782,7 +782,7 @@ if(result[1]=='si'){
 			};
 			$("#loader").fadeIn('slow');
     $.ajax({
-        url: 'comprobaciones/clases/controlador_filtro.php', 
+        url: 'clases/controlador_filtro.php', 
         type: 'POST',
         data: parametros,
 beforeSend: function(objeto){
