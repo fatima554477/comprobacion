@@ -389,7 +389,7 @@ actualizarBotonesRechazo(RECHAZADO_id, RECHAZADO_text);
 
 	$.ajax({
 
-		url:'comprobaciones/controladorPP.php',
+		url:'controladorPP.php',
 
 	method:'POST',
 
@@ -782,7 +782,7 @@ if(result[1]=='si'){
 			};
 			$("#loader").fadeIn('slow');
     $.ajax({
-        url: 'clases/controlador_filtro.php', 
+        url: 'comprobaciones/clases/controlador_filtro.php', 
         type: 'POST',
         data: parametros,
 beforeSend: function(objeto){
