@@ -705,7 +705,7 @@ public function PAGOPRO ($NUMERO_CONSECUTIVO_PROVEE , $NOMBRE_COMERCIAL , $RAZON
 
 
 	
-		public function ACTUALIZA_RECHAZADO($idcomprobacion, $estatusRechazado){
+	public function ACTUALIZA_RECHAZADO($idComprobacion, $estatusRechazado){
 
 		$conn = $this->db();
 
@@ -713,23 +713,15 @@ public function PAGOPRO ($NUMERO_CONSECUTIVO_PROVEE , $NOMBRE_COMERCIAL , $RAZON
 
 		if($session != ''){
 
-			$valorAnterior = $this->valor_actual_campo_comprobacion($conn, $idcomprobacion, 'STATUS_RECHAZADO');
-			$valorAnteriorStatusPago = $this->valor_actual_campo_comprobacion($conn, $idcomprobacion, 'STATUS_DE_PAGO');
+			$valorAnterior = $this->valor_actual_campo_comprobacion($conn, $idComprobacion, 'STATUS_RECHAZADO');
 
-			$camposActualizar = "STATUS_RECHAZADO = '".$estatusRechazado."'";
-			if($estatusRechazado === 'si'){
-				$camposActualizar .= ", STATUS_DE_PAGO = 'RECHAZADO'";
-			}
-
-			$var1 = "update 07COMPROBACION SET ".$camposActualizar." WHERE id = '".$idcomprobacion."'";
-
-	mysqli_query($conn,$var1) or die('P156'.mysqli_error($conn));
+			$var1 = "update 07COMPROBACION SET STATUS_RECHAZADO = '".$estatusRechazado."' WHERE id = '".$idComprobacion."'";
 
 
-			$this->registrar_cambio_estado_detallado($conn, $idcomprobacion, 'STATUS_RECHAZADO', $valorAnterior, $estatusRechazado);
-			if($estatusRechazado === 'si' && $valorAnteriorStatusPago !== 'RECHAZADO'){
-				$this->registrar_cambio_estado_detallado($conn, $idcomprobacion, 'STATUS_DE_PAGO', $valorAnteriorStatusPago, 'RECHAZADO');
-			}
+
+			mysqli_query($conn,$var1) or die('P156'.mysqli_error($conn));
+
+			$this->registrar_cambio_estado_detallado($conn, $idComprobacion, 'STATUS_RECHAZADO', $valorAnterior, $estatusRechazado);
 
 			return "Actualizado^".$estatusRechazado;
 
@@ -769,7 +761,7 @@ public function PAGOPRO ($NUMERO_CONSECUTIVO_PROVEE , $NOMBRE_COMERCIAL , $RAZON
 
 
 
-	public function guardar_motivo_rechazo($idcomprobacion, $motivoRechazo){
+	public function guardar_motivo_rechazo($idComprobacion, $motivoRechazo){
 
 		$conn = $this->db();
 
@@ -783,11 +775,11 @@ public function PAGOPRO ($NUMERO_CONSECUTIVO_PROVEE , $NOMBRE_COMERCIAL , $RAZON
 
 
 
-		$idcomprobacion = intval($idcomprobacion);
+		$idComprobacion = intval($idComprobacion);
 
 		$motivoRechazo = trim($motivoRechazo);
 
-		if($idcomprobacion <= 0 || $motivoRechazo == ''){
+		if($idComprobacion <= 0 || $motivoRechazo == ''){
 
 			return "Datos_invalidos";
 
@@ -805,7 +797,7 @@ public function PAGOPRO ($NUMERO_CONSECUTIVO_PROVEE , $NOMBRE_COMERCIAL , $RAZON
 
 		$insert = "INSERT INTO 07COMPROBACION_RECHAZOS (id_comprobacion, motivo_rechazo, usuario_registro, fecha_registro)
 
-		VALUES ('".$idcomprobacion."', '".$motivoEscapado."', '".$usuario."', NOW())
+		VALUES ('".$idComprobacion."', '".$motivoEscapado."', '".$usuario."', NOW())
 
 		ON DUPLICATE KEY UPDATE motivo_rechazo = VALUES(motivo_rechazo), usuario_registro = VALUES(usuario_registro), fecha_registro = NOW()";
 
@@ -813,17 +805,21 @@ public function PAGOPRO ($NUMERO_CONSECUTIVO_PROVEE , $NOMBRE_COMERCIAL , $RAZON
 
 
 
-		$this->registrar_bitacora($conn, $idcomprobacion, 'RECHAZO', 'Se registró motivo de rechazo: "'.$motivoRechazo.'".', '', $this->nombre_usuario_bitacora());
+		$this->registrar_bitacora($conn, $idComprobacion, 'RECHAZO', 'Se registró motivo de rechazo: "'.$motivoRechazo.'".', '', $this->nombre_usuario_bitacora());
 
 		return "ok";
+
 	}
-	public function obtener_motivo_rechazo($idcomprobacion){
+
+
+
+	public function obtener_motivo_rechazo($idComprobacion){
 
 		$conn = $this->db();
 
-		$idcomprobacion = intval($idcomprobacion);
+		$idComprobacion = intval($idComprobacion);
 
-		if($idcomprobacion <= 0){
+		if($idComprobacion <= 0){
 
 			return '';
 
@@ -833,7 +829,7 @@ public function PAGOPRO ($NUMERO_CONSECUTIVO_PROVEE , $NOMBRE_COMERCIAL , $RAZON
 
 		$this->crear_tabla_rechazos_si_no_existe($conn);
 
-		$query = mysqli_query($conn, "SELECT motivo_rechazo FROM 07COMPROBACION_RECHAZOS WHERE id_comprobacion = '".$idcomprobacion."' LIMIT 1");
+		$query = mysqli_query($conn, "SELECT motivo_rechazo FROM 07COMPROBACION_RECHAZOS WHERE id_comprobacion = '".$idComprobacion."' LIMIT 1");
 
 		if($query){
 
@@ -844,10 +840,15 @@ public function PAGOPRO ($NUMERO_CONSECUTIVO_PROVEE , $NOMBRE_COMERCIAL , $RAZON
 				return $row['motivo_rechazo'];
 
 			}
+
 		}
+
+
+
 		return '';
 
 	}
+
 	
 	
 
