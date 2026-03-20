@@ -289,7 +289,7 @@ function recalcularTotal() {
 		success:function(data){
 		var result = data.split('^');				
 		$('#pasarpagado2').html("Cargando...").fadeIn().delay(500).fadeOut();
-
+        load(1);
 		if(result[1]=='si'){
 		$('#color_AUDITORIA2'+AUDITORIA2_id).css('background-color', '#ceffcc');
 		}
@@ -321,7 +321,7 @@ function recalcularTotal() {
 		success:function(data){
 		var result = data.split('^');				
 		$('#pasarpagado2').html("Cargando...").fadeIn().delay(500).fadeOut();
-
+        load(1);
 		if(result[1]=='si'){
 		$('#color_AUDITORIA3'+AUDITORIA3_id).css('background-color', '#ceffcc');
 		}
@@ -353,7 +353,7 @@ function recalcularTotal() {
 		success:function(data){
 		var result = data.split('^');				
 		$('#pasarpagado2').html("Cargando...").fadeIn().delay(500).fadeOut();
-		
+		load(1);
 		if(result[1]=='si'){
 		$('#color_FINANZAS'+FINANZAS_id).css('background-color', '#ceffcc');
 		}
@@ -389,7 +389,7 @@ actualizarBotonesRechazo(RECHAZADO_id, RECHAZADO_text);
 
 	$.ajax({
 
-		url:'controladorPP.php',
+		url:'comprobaciones/controladorPP.php',
 
 	method:'POST',
 
@@ -406,7 +406,7 @@ actualizarBotonesRechazo(RECHAZADO_id, RECHAZADO_text);
 				var result = (data || '').trim().split('^');
 
 				$('#pasarpagado2').html("Cargando...").fadeIn().delay(500).fadeOut();
-
+                  load(1);
 			
 	        if(result[1] == 'si' || result[1] == 'no'){
 					$checkBox.data('estadoAnterior', result[1]);
@@ -585,7 +585,7 @@ function cerrarModalRechazoPago(){
 	success:function(data){
 		var result = data.split('^');				
 		$('#pasarpagado2').html("Cargando...").fadeIn().delay(500).fadeOut();
-		
+		load(1);
 if(result[1]=='si'){
 		$('#color_VENTAS'+VENTAS_id).css('background-color', '#ceffcc');
 		$('#STATUS_RECHAZADO'+VENTAS_id)
@@ -643,7 +643,7 @@ if(result[1]=='si'){
 		var MONTO_DEPOSITAR = getVal("MONTO_DEPOSITAR_1");
 		var TIPO_DE_MONEDA = getVal("TIPO_DE_MONEDA_1");
 		var PFORMADE_PAGO = getVal("PFORMADE_PAGO_1");
-		var FECHA_A_DEPOSITAR = getVal("FECHA_A_DEPOSITAR_1");
+		
 		var STATUS_DE_PAGO = getVal("STATUS_DE_PAGO_1");
 		var BANCO_ORIGEN = getVal("BANCO_ORIGEN1AA");
 		var ACTIVO_FIJO = getVal("ACTIVO_FIJO_1");
@@ -697,6 +697,8 @@ if(result[1]=='si'){
 		var TuaTotalCargos = getVal("TuaTotalCargos");
 		var Descuento = getVal("Descuento");
 		var propina = getVal("propina");
+		var FECHA_A_DEPOSITAR_DESDE = getVal("FECHA_A_DEPOSITAR_DESDE");
+        var FECHA_A_DEPOSITAR_HASTA = getVal("FECHA_A_DEPOSITAR_HASTA");
 		var per_page = getVal("per_page");
 		var parametros = {
 			"action": "ajax",
@@ -720,7 +722,8 @@ if(result[1]=='si'){
 			'MONTO_DEPOSITAR': MONTO_DEPOSITAR,
 			'TIPO_DE_MONEDA': TIPO_DE_MONEDA,
 			'PFORMADE_PAGO': PFORMADE_PAGO,
-			'FECHA_A_DEPOSITAR': FECHA_A_DEPOSITAR,
+			'FECHA_A_DEPOSITAR_DESDE': FECHA_A_DEPOSITAR_DESDE,
+             'FECHA_A_DEPOSITAR_HASTA': FECHA_A_DEPOSITAR_HASTA,
 			'STATUS_DE_PAGO': STATUS_DE_PAGO,
 			'BANCO_ORIGEN': BANCO_ORIGEN,
 			'ACTIVO_FIJO': ACTIVO_FIJO,

@@ -208,8 +208,18 @@ if($search['TIPO_DE_MONEDA']!=""){
 $sWhere2.="  $tables.TIPO_DE_MONEDA LIKE '%".$search['TIPO_DE_MONEDA']."%' AND ";}
 if($search['PFORMADE_PAGO']!=""){
 $sWhere2.="  $tables.PFORMADE_PAGO LIKE '%".$search['PFORMADE_PAGO']."%' AND ";}
-if($search['FECHA_A_DEPOSITAR']!=""){
-$sWhere2.="  $tables.FECHA_A_DEPOSITAR LIKE '%".$search['FECHA_A_DEPOSITAR']."%' AND ";}
+
+
+if($search['FECHA_A_DEPOSITAR_DESDE']!="" && $search['FECHA_A_DEPOSITAR_HASTA']!=""){
+    $sWhere2.="  $tables.FECHA_A_DEPOSITAR BETWEEN '".$search['FECHA_A_DEPOSITAR_DESDE']."' AND '".$search['FECHA_A_DEPOSITAR_HASTA']."' AND ";
+} elseif($search['FECHA_A_DEPOSITAR_DESDE']!=""){
+    $sWhere2.="  $tables.FECHA_A_DEPOSITAR >= '".$search['FECHA_A_DEPOSITAR_DESDE']."' AND ";
+} elseif($search['FECHA_A_DEPOSITAR_HASTA']!=""){
+    $sWhere2.="  $tables.FECHA_A_DEPOSITAR <= '".$search['FECHA_A_DEPOSITAR_HASTA']."' AND ";
+}
+
+
+
 if($search['STATUS_DE_PAGO']!=""){
 $sWhere2.="  $tables.STATUS_DE_PAGO LIKE '%".$search['STATUS_DE_PAGO']."%' AND ";}
 
@@ -397,17 +407,21 @@ IF($sWhere2!=""){
 		$sWhere3campo.=" $tables.id desc ";		
 $sWhere3 .= " order by ".$sWhere3campo;
 
-		//$sWhere3.="  order by $tables.id desc ";
-//echo $sql="SELECT $campos FROM  $tables $sWhere $sWhere3 LIMIT $offset,$per_page";
-		 $sql="SELECT $campos , 07COMPROBACION.id as 07COMPROBACIONid FROM $tables LEFT JOIN $tables2 $sWhere $sWhere3 LIMIT $offset,$per_page";
-		
-		$query=$this->mysqli->query($sql);
-		$sql1="SELECT $campos , 07COMPROBACION.id as 07COMPROBACIONid FROM  $tables LEFT JOIN $tables2 $sWhere $sWhere3 ";
-		$nums_row=$this->countAll($sql1);
-		//Set counter
-		$this->setCounter($nums_row);
-		return $query;
-	}
+
+ $sql = "SELECT $campos, 07COMPROBACION.id as 07COMPROBACIONid 
+        FROM $tables LEFT JOIN $tables2 $sWhere $sWhere3 
+        LIMIT $offset,$per_page";
+    $query = $this->mysqli->query($sql);
+
+  
+   $sqlCount = "SELECT COUNT(*) as total 
+             FROM $tables LEFT JOIN $tables2 $sWhere3";
+    $resultCount = $this->mysqli->query($sqlCount);
+    $rowCount = $resultCount->fetch_assoc();
+    $this->setCounter($rowCount['total']);
+
+    return $query;
+}
 	function setCounter($counter) {
 		$this->counter = $counter;
 	}
