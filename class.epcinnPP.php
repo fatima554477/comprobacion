@@ -102,51 +102,30 @@ $variablequery = mysqli_query($conn,$variable);
 	}
 	
 
-	public function solocargartemp($archivo)/*new file*/
-	{
-		$nombre_carpeta=__ROOT2__.'/includes/archivos';
-		$filehandle = opendir($nombre_carpeta);
-		$nombretemp = $_FILES[$archivo]["tmp_name"];
-		$nombrearchivo = $_FILES[$archivo]["name"];
-		$tamanyoarchivo = $_FILES[$archivo]["size"];
-		$tipoarchivo = getimagesize($nombretemp);
-        $nombrearchivo = basename($nombrearchivo);
-		$extension = explode('.',$nombrearchivo);
-		$cuenta = count($extension) - 1;
-		$nuevonombre = $nombrearchivo;
-		 $extension[$cuenta];
-		//echo '1aaaaaaaaaaaaaaaa2'.$extension[$cuenta].'1aaaaaaaaaaaaaaaa2';
-		
-		if( 
-		strtolower($extension[$cuenta]) == 'pdf' or 
-		strtolower($extension[$cuenta]) == 'gif' or 
-		strtolower($extension[$cuenta]) == 'jpeg' or 
-		strtolower($extension[$cuenta]) == 'jpg' or 
-		strtolower($extension[$cuenta]) == 'png' or 
-		strtolower($extension[$cuenta]) == 'mp4' or 
-		strtolower($extension[$cuenta]) == 'docx' or 
-		strtolower($extension[$cuenta]) == 'doc' or 
-		strtolower($extension[$cuenta]) == 'xml'
-		){
-		if(move_uploaded_file($nombretemp, $nombre_carpeta.'/'. $nuevonombre)){
-		chmod ($nombre_carpeta.'/' . $nuevonombre, 0755);
-		$tamanyo =fileSize($nombre_carpeta.'/'. $nuevonombre);
-		$fp = fopen($nombre_carpeta.'/'.$nuevonombre, "rb"); 
-		$contenido = fread($fp, $tamanyo);
-		$contenido = addslashes($contenido);
-		
-		return trim($nuevonombre);
-		
-		}
-		else{
-			return "1";
-		}
-		
-		}
-		else{
-			return "2";
-		}
-	}
+public function solocargartemp($archivo)
+{
+    $nombre_carpeta = __ROOT2__.'/includes/archivos';
+    $nombretemp    = $_FILES[$archivo]["tmp_name"];
+    $nombrearchivo = basename($_FILES[$archivo]["name"]);
+    $extension     = explode('.', $nombrearchivo);
+    $cuenta        = count($extension) - 1;
+    $ext           = strtolower($extension[$cuenta]);
+
+    $extensionesPermitidas = array('pdf','gif','jpeg','jpg','png','mp4','docx','doc','xml');
+    if(!in_array($ext, $extensionesPermitidas)){
+        return "2";
+    }
+
+    // ✅ Nombre único para evitar sobreescribir archivos de otros registros
+    $nombrebase  = pathinfo($nombrearchivo, PATHINFO_FILENAME);
+    $nuevonombre = $nombrebase . '_' . uniqid() . '.' . $ext;
+
+    if(move_uploaded_file($nombretemp, $nombre_carpeta.'/'.$nuevonombre)){
+        chmod($nombre_carpeta.'/'.$nuevonombre, 0755);
+        return trim($nuevonombre);
+    }
+    return "1";
+}
 
 
 
@@ -165,12 +144,21 @@ $variablequery = mysqli_query($conn,$variable);
 		return $row = mysqli_fetch_array($arrayquery, MYSQLI_ASSOC);		
 	}
 
-	public function variable_SUBETUFACTURA2($id12){
-		$conn = $this->db();
-		$variablequery = "select * from 07COMPROBACIONDOCT where idRelacion = '".$id12."' and idTemporal = 'si' and (ADJUNTAR_FACTURA_XML is not null or ADJUNTAR_FACTURA_XML <> '') order by id desc ";
-		$arrayquery = mysqli_query($conn,$variablequery);
-		return $row = mysqli_fetch_array($arrayquery, MYSQLI_ASSOC);		
-	}
+public function variable_SUBETUFACTURA2($id12){
+    $conn = $this->db();
+    // Filtrar también por la sesión activa para no tomar un XML huérfano de otro registro
+    $idCGsesion = isset($_SESSION['idCG']) ? mysqli_real_escape_string($conn, $_SESSION['idCG']) : '';
+    
+    $whereIdCG = ($idCGsesion != '') ? " AND idRelacion = '".$idCGsesion."' " : " AND idRelacion = '".$id12."' ";
+    
+    $variablequery = "SELECT * FROM 07COMPROBACIONDOCT 
+                      WHERE idTemporal = 'si' 
+                      ".$whereIdCG."
+                      AND (ADJUNTAR_FACTURA_XML IS NOT NULL AND ADJUNTAR_FACTURA_XML <> '') 
+                      ORDER BY id DESC";
+    $arrayquery = mysqli_query($conn, $variablequery);
+    return $row = mysqli_fetch_array($arrayquery, MYSQLI_ASSOC);
+}
 
 	public function revisar_pagoproveedor(){
 		$conn = $this->db();
@@ -180,12 +168,46 @@ $variablequery = mysqli_query($conn,$variable);
 		return $row['id'];
 	}
 
-	public function revisar_pagoproveedor2($id){
+public function revisar_pagoproveedor2($id){
 		$conn = $this->db();
 		$var1 = 'select id from 07COMPROBACION where id =  "'.$id.'" ';
 		$query = mysqli_query($conn,$var1) or die('P44'.mysqli_error($conn));
 		$row = mysqli_fetch_array($query, MYSQLI_ASSOC);
 		return $row['id'];
+	}
+
+	public function xml_factura_guardado($idComprobacion, $idUsuario){
+		$conn = $this->db();
+		$idComprobacion = mysqli_real_escape_string($conn, (string)$idComprobacion);
+		$idUsuario = mysqli_real_escape_string($conn, (string)$idUsuario);
+
+		$var = "SELECT ADJUNTAR_FACTURA_XML
+		FROM 07COMPROBACIONDOCT
+		WHERE
+			(
+				(idRelacion = '".$idComprobacion."' AND (idTemporal = '".$idComprobacion."' OR idTemporal = '' OR idTemporal IS NULL))
+				OR
+				(idRelacion = '".$idUsuario."' AND idTemporal = 'si')
+			)
+			AND ADJUNTAR_FACTURA_XML IS NOT NULL
+			AND ADJUNTAR_FACTURA_XML <> ''
+		ORDER BY id DESC
+		LIMIT 1";
+
+		$query = mysqli_query($conn, $var);
+		$row = mysqli_fetch_array($query, MYSQLI_ASSOC);
+		$nombreXml = isset($row['ADJUNTAR_FACTURA_XML']) ? trim((string)$row['ADJUNTAR_FACTURA_XML']) : '';
+
+		if($nombreXml == ''){
+			return '';
+		}
+
+		$rutaXml = __ROOT3__.'/includes/archivos/'.$nombreXml;
+		if(!file_exists($rutaXml)){
+			return '';
+		}
+
+		return $nombreXml;
 	}
 	
 
@@ -705,7 +727,7 @@ public function PAGOPRO ($NUMERO_CONSECUTIVO_PROVEE , $NOMBRE_COMERCIAL , $RAZON
 
 
 	
-	public function ACTUALIZA_RECHAZADO($idComprobacion, $estatusRechazado){
+		public function ACTUALIZA_RECHAZADO($idComprobacion, $estatusRechazado){
 
 		$conn = $this->db();
 
@@ -714,14 +736,25 @@ public function PAGOPRO ($NUMERO_CONSECUTIVO_PROVEE , $NOMBRE_COMERCIAL , $RAZON
 		if($session != ''){
 
 			$valorAnterior = $this->valor_actual_campo_comprobacion($conn, $idComprobacion, 'STATUS_RECHAZADO');
+			$valorAnteriorStatusPago = $this->valor_actual_campo_comprobacion($conn, $idComprobacion, 'STATUS_DE_PAGO');
 
-			$var1 = "update 07COMPROBACION SET STATUS_RECHAZADO = '".$estatusRechazado."' WHERE id = '".$idComprobacion."'";
+			$camposActualizar = "STATUS_RECHAZADO = '".$estatusRechazado."'";
+            $camposActualizar = "STATUS_RECHAZADO = '".$estatusRechazado."'";
+                 if($estatusRechazado === 'si'){
+            $camposActualizar .= ", STATUS_DE_PAGO = 'RECHAZADO'";
+             } elseif($estatusRechazado === 'no'){
+            $camposActualizar .= ", STATUS_DE_PAGO = 'SOLICITADO'";
+            }
 
+			$var1 = "update 07COMPROBACION SET ".$camposActualizar." WHERE id = '".$idComprobacion."'";
 
+	mysqli_query($conn,$var1) or die('P156'.mysqli_error($conn));
 
-			mysqli_query($conn,$var1) or die('P156'.mysqli_error($conn));
 
 			$this->registrar_cambio_estado_detallado($conn, $idComprobacion, 'STATUS_RECHAZADO', $valorAnterior, $estatusRechazado);
+			if($estatusRechazado === 'si' && $valorAnteriorStatusPago !== 'RECHAZADO'){
+				$this->registrar_cambio_estado_detallado($conn, $idComprobacion, 'STATUS_DE_PAGO', $valorAnteriorStatusPago, 'RECHAZADO');
+			}
 
 			return "Actualizado^".$estatusRechazado;
 
@@ -734,6 +767,49 @@ public function PAGOPRO ($NUMERO_CONSECUTIVO_PROVEE , $NOMBRE_COMERCIAL , $RAZON
 	}
 
 
+	private function valor_actual_campo_comprobacion($conn, $idComprobacion, $campo){
+
+
+
+		$camposPermitidos = array('STATUS_RECHAZADO', 'STATUS_DE_PAGO');
+
+		if(!in_array($campo, $camposPermitidos, true)){
+
+			return '';
+
+		}
+
+
+
+		$idSeguro = mysqli_real_escape_string($conn, $idComprobacion);
+
+		$query = "SELECT ".$campo." AS valor FROM 07COMPROBACION WHERE id = '".$idSeguro."' LIMIT 1";
+
+		$resultado = mysqli_query($conn, $query);
+
+		if($resultado && ($row = mysqli_fetch_assoc($resultado))){
+
+			return isset($row['valor']) ? $row['valor'] : '';
+
+		}
+
+
+
+		return '';
+
+	}
+
+
+
+	private function registrar_cambio_estado_detallado($conn, $idComprobacion, $campo, $valorAnterior, $valorNuevo){
+
+		// Este proyecto no cuenta con una bitacora unificada para estos campos en esta clase.
+
+		// Se deja el metodo para evitar errores fatales al actualizar STATUS_RECHAZADO.
+
+		return true;
+
+	}
 
 	private function crear_tabla_rechazos_si_no_existe($conn){
 
@@ -761,58 +837,34 @@ public function PAGOPRO ($NUMERO_CONSECUTIVO_PROVEE , $NOMBRE_COMERCIAL , $RAZON
 
 
 
-	public function guardar_motivo_rechazo($idComprobacion, $motivoRechazo){
+public function guardar_motivo_rechazo($idComprobacion, $motivoRechazo){
+    $conn = $this->db();
+    $session = isset($_SESSION['idem'])?$_SESSION['idem']:'';
+    if($session == ''){
+        return "Sesion_invalida";
+    }
 
-		$conn = $this->db();
+    $idComprobacion = intval($idComprobacion);
+    $motivoRechazo = trim($motivoRechazo);
+    if($idComprobacion <= 0 || $motivoRechazo == ''){
+        return "Datos_invalidos";
+    }
 
-		$session = isset($_SESSION['idem'])?$_SESSION['idem']:'';
+    $this->crear_tabla_rechazos_si_no_existe($conn);
+    $motivoEscapado = mysqli_real_escape_string($conn, $motivoRechazo);
+    $usuarioEscapado = mysqli_real_escape_string($conn, $session); // ← usar $session directamente
 
-		if($session == ''){
+    $insert = "INSERT INTO 07COMPROBACION_RECHAZOS (id_comprobacion, motivo_rechazo, usuario_registro, fecha_registro)
+    VALUES ('".$idComprobacion."', '".$motivoEscapado."', '".$usuarioEscapado."', NOW())
+    ON DUPLICATE KEY UPDATE motivo_rechazo = VALUES(motivo_rechazo), usuario_registro = VALUES(usuario_registro), fecha_registro = NOW()";
+    
+    mysqli_query($conn, $insert) or die('P156'.mysqli_error($conn));
 
-			return "Sesion_invalida";
-
-		}
-
-
-
-		$idComprobacion = intval($idComprobacion);
-
-		$motivoRechazo = trim($motivoRechazo);
-
-		if($idComprobacion <= 0 || $motivoRechazo == ''){
-
-			return "Datos_invalidos";
-
-		}
-
-
-
-		$this->crear_tabla_rechazos_si_no_existe($conn);
-
-		$motivoEscapado = mysqli_real_escape_string($conn, $motivoRechazo);
-
-		$usuario = mysqli_real_escape_string($conn, $this->nombre_usuario_bitacora());
-
-
-
-		$insert = "INSERT INTO 07COMPROBACION_RECHAZOS (id_comprobacion, motivo_rechazo, usuario_registro, fecha_registro)
-
-		VALUES ('".$idComprobacion."', '".$motivoEscapado."', '".$usuario."', NOW())
-
-		ON DUPLICATE KEY UPDATE motivo_rechazo = VALUES(motivo_rechazo), usuario_registro = VALUES(usuario_registro), fecha_registro = NOW()";
-
-		mysqli_query($conn, $insert) or die('P156'.mysqli_error($conn));
-
-
-
-		$this->registrar_bitacora($conn, $idComprobacion, 'RECHAZO', 'Se registró motivo de rechazo: "'.$motivoRechazo.'".', '', $this->nombre_usuario_bitacora());
-
-		return "ok";
-
-	}
-
-
-
+    return "ok";
+}
+	
+	
+	
 	public function obtener_motivo_rechazo($idComprobacion){
 
 		$conn = $this->db();
@@ -840,15 +892,10 @@ public function PAGOPRO ($NUMERO_CONSECUTIVO_PROVEE , $NOMBRE_COMERCIAL , $RAZON
 				return $row['motivo_rechazo'];
 
 			}
-
 		}
-
-
-
 		return '';
 
 	}
-
 	
 	
 
@@ -1136,11 +1183,37 @@ public function Listado_pagoproveedor(){ $conn = $this->db(); $variablequery = "
 	return $arrayquery = mysqli_query($conn,$variablequery); 
 	}
 
-    public function Listado_subefacturaDOCTOS($ID){
-		$conn = $this->db();
-		$variablequery = "select * from 07COMPROBACIONDOCT where idTemporal = '".$ID."'  order by id desc ";
-		return $arrayquery = mysqli_query($conn,$variablequery);
-		}
+    public function Listado_subefacturaDOCTOS($ID) {
+    $conn = $this->db();
+    $ID = mysqli_real_escape_string($conn, $ID);
+    
+    // Solo vincular documentos huérfanos de la SESIÓN ACTIVA,
+    // no de cualquier documento del proveedor
+    $idCGsesion = isset($_SESSION['idCG']) ? mysqli_real_escape_string($conn, $_SESSION['idCG']) : '';
+    
+    if ($idCGsesion != '') {
+        // Verificar que el registro $ID pertenece al proveedor de la sesión
+        $qVerifica = "SELECT id FROM 07COMPROBACION 
+                      WHERE id = '".$ID."' 
+                        AND idRelacion = '".$idCGsesion."' 
+                      LIMIT 1";
+        $rVerifica = mysqli_query($conn, $qVerifica);
+        
+        if (mysqli_fetch_assoc($rVerifica)) {
+            // Solo vincular documentos de la sesión activa al registro correcto
+            $fix = "UPDATE 07COMPROBACIONDOCT 
+                    SET idTemporal = '".$ID."'
+                    WHERE idRelacion = '".$idCGsesion."' 
+                      AND idTemporal = 'si'";
+            mysqli_query($conn, $fix);
+        }
+    }
+    
+    $variablequery = "SELECT * FROM 07COMPROBACIONDOCT 
+                      WHERE idTemporal = '".$ID."' 
+                      ORDER BY id DESC";
+    return mysqli_query($conn, $variablequery);
+}
 
     public function Listado_subefacturadocto($ADJUNTAR_COTIZACION){ 
 	$conn = $this->db();
