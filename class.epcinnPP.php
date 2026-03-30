@@ -147,10 +147,11 @@ public function solocargartemp($archivo)
 
 public function variable_SUBETUFACTURA2($id12){
     $conn = $this->db();
-    // Filtrar también por la sesión activa para no tomar un XML huérfano de otro registro
+    $id12 = mysqli_real_escape_string($conn, (string)$id12);
     $idCGsesion = isset($_SESSION['idCG']) ? mysqli_real_escape_string($conn, $_SESSION['idCG']) : '';
-    
-    $whereIdCG = ($idCGsesion != '') ? " AND idRelacion = '".$idCGsesion."' " : " AND idRelacion = '".$id12."' ";
+
+    // Usar $id12 cuando esté disponible; la sesión solo como fallback
+    $whereIdCG = ($id12 != '' && $id12 != '0') ? " AND idRelacion = '".$id12."' " : (($idCGsesion != '') ? " AND idRelacion = '".$idCGsesion."' " : '');
     
     $variablequery = "SELECT * FROM 07COMPROBACIONDOCT 
                       WHERE idTemporal = 'si' 
