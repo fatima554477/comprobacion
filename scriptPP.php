@@ -3,12 +3,14 @@
  * Autor: 
  * Programer: Fatima Arellano
  * Propietario: EPC
+ * fecha sandor;
+ * fecha fatima:23/03/2026
 
 
  */
 ?>
 
-<!-- ===================== MODALES ===================== -->
+
 
 <!-- Modal: Detalles pequeño (14) -->
 <div id="dataModal14" class="modal fade">
@@ -123,12 +125,9 @@
 </div>
 
 
-<!-- ===================== SCRIPTS ===================== -->
 <script type="text/javascript">
 
-/* -------------------------------------------------------
-   CARGA DE ARCHIVOS (DRAG & DROP + FILE EXPLORER)
-------------------------------------------------------- */
+
 var fileobj;
 
 function upload_file(e, name) {
@@ -194,17 +193,13 @@ function ajax_file_upload1(file_obj, nombre) {
 }
 
 
-/* -------------------------------------------------------
-   HELPER: recarga un elemento por selector
-------------------------------------------------------- */
+
 function recargarElemento(selector) {
   $(selector).load(location.href + ' ' + selector);
 }
 
 
-/* -------------------------------------------------------
-   FORMATEO DE MONTOS CON COMAS
-------------------------------------------------------- */
+
 function comasainput(name) {
   var el    = document.getElementsByName(name)[0];
   var clean = el.value.replace(/,/g, '');
@@ -212,9 +207,7 @@ function comasainput(name) {
 }
 
 
-/* -------------------------------------------------------
-   FECHA DE LLENADO AUTOMÁTICA (definida UNA sola vez)
-------------------------------------------------------- */
+
 function actualizarFechaDeLlenado() {
   var fechaInput = document.querySelector('input[name="FECHA_DE_LLENADO"]');
   if (!fechaInput) return;
@@ -225,9 +218,7 @@ function actualizarFechaDeLlenado() {
 }
 
 
-/* -------------------------------------------------------
-   SHOW/HIDE TARGETS — REEMPLAZA LOS 47 BLOQUES REPETIDOS
-------------------------------------------------------- */
+
 function activarTarget(num) {
   var allTargets = [];
   for (var i = 1; i <= 47; i++) allTargets.push(i);
@@ -244,9 +235,6 @@ function activarTarget(num) {
 }
 
 
-/* -------------------------------------------------------
-   MENSAJE FLOTANTE (centralizado)
-------------------------------------------------------- */
 function mostrarMensajePago(html) {
   $('#mensajepagoproveedores')
     .stop(true, true).html(html).show().fadeIn(150).delay(2000).fadeOut(600);
@@ -255,12 +243,10 @@ function mostrarMensajePago(html) {
 
 $(document).ready(function () {
 
-  /* Inicialización: solo target1 visible */
+
   activarTarget(1);
 
-  /* ---------------------------------------------------
-     SHOW/HIDE individuales — loop en lugar de 47 bloques
-  --------------------------------------------------- */
+
   var allNums = [];
   for (var n = 1; n <= 47; n++) allNums.push(n);
   allNums.push('VIDEO');
@@ -273,10 +259,10 @@ $(document).ready(function () {
     $('#ocultar' + num).on('click', function () { $('#target' + num).hide('linear'); });
   });
 
-  // Excepción: mostrar303 controla target33
+
   $('#mostrar303').off('click').on('click', function () { $('#target33').show('swing'); });
 
-  /* Mostrar / Ocultar TODOS */
+
   function toggleTodos(accion) {
     allNums.forEach(function (n) {
       $('#target' + n)[accion](accion === 'show' ? 'swing' : 'linear');
@@ -286,14 +272,11 @@ $(document).ready(function () {
   $('#ocultartodos, #ocultartodos2').on('click', function () { toggleTodos('hide'); });
 
 
-  /* ---------------------------------------------------
-     HELPER: limpia el formulario de pago a proveedores
-  --------------------------------------------------- */
   function limpiarFormularioPago() {
     var form = document.getElementById('pagoaproveedoresform');
     if (form) form.reset();
 
-    // Campos poblados desde PHP/XML
+
     ['#RAZON_SOCIAL','#CONCEPTO_PROVEE','#RFC_PROVEEDOR',
      '#TIPO_DE_MONEDA','#FECHA_DE_PAGO','#NUMERO_CONSECUTIVO_PROVEE',
      '#ADJUNTAR_FACTURA_XML','#ADJUNTAR_FACTURA_PDF',
@@ -301,13 +284,13 @@ $(document).ready(function () {
      '#2MONTO_FACTURA','#2MONTO_DEPOSITAR','#2ADJUNTAR_FACTURA_PDF'
     ].forEach(function (id) { $(id).val(''); });
 
-    // Previews de archivos
+
     ['#1ADJUNTAR_FACTURA_XML','#1ADJUNTAR_FACTURA_PDF',
      '#1ADJUNTAR_COTIZACION','#1CONPROBANTE_TRANSFERENCIA',
      '#1ADJUNTAR_ARCHIVO_1','#mensajeADJUNTOCOL'
     ].forEach(function (id) { $(id).html(''); });
 
-    // Recargar elementos dinámicos
+
     ['#CONCEPTO_PROVEE2','#2ADJUNTAR_FACTURA_XML','#ADJUNTAR_FACTURA_XML',
      '#ADJUNTAR_FACTURA_PDF','#1ADJUNTAR_FACTURA_PDF',
      '#IMPUESTO_HOSPEDAJE','#MONTO_PROPINA','#IVA','#NOMBRE_COMERCIAL',
@@ -327,11 +310,7 @@ $(document).ready(function () {
   }
 
 
-  /* ---------------------------------------------------
-     ENVIAR PAGO PROVEEDORES
-     FIX: .off().on() para evitar listeners duplicados
-          actualizarFechaDeLlenado() definida una sola vez arriba
-  --------------------------------------------------- */
+
   $('#enviarPAGOPROVEEDORES').off('click').on('click', function () {
     actualizarFechaDeLlenado();
     var formData = new FormData($('#pagoaproveedoresform')[0]);
@@ -347,20 +326,20 @@ $(document).ready(function () {
     }).done(function (data) {
       if ($.trim(data) === 'Ingresado' || $.trim(data) === 'Actualizado') {
 
-        // 1. Mensaje de confirmación
+
         mostrarMensajePago("<span id='ACTUALIZADO'>" + data + "</span>");
 
-        // 2. Limpiar formulario, archivos y previews
+
         limpiarFormularioPago();
 
-        // 3. Refrescar tabla y totales (pequeño delay para no pisar el mensaje)
+
         setTimeout(function () {
           $('#resettabla').load(location.href + ' #resettabla');
           $('#reset_totales').load(location.href + ' #reset_totales');
           if (typeof load === 'function') load(1);
         }, 300);
 
-        // 4. Ir a target2
+   
         activarTarget(2);
         var el = document.getElementById('target2');
         if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -375,30 +354,11 @@ $(document).ready(function () {
   });
 
 
-  /* ---------------------------------------------------
-     CHECKBOX: monto a pagar
-  --------------------------------------------------- */
-  window.myFunction = function (montoapagar_id) {
-    var checkBox = document.getElementById('montoapagar' + montoapagar_id);
-    if (!checkBox) return;
-    $.ajax({
-      url: 'pagoproveedores/fetch_pagesPP.php',
-      method: 'POST',
-      data: { montoapagar_id: montoapagar_id, montoapagar_text: checkBox.checked ? 'enter' : 'none' },
-      beforeSend: function () { $('#mensajemontoapagar').html('cargando...'); },
-      success: function () {
-        recargarElemento('#montoapagartotal');
-        recargarElemento('#montoapagartotal2');
-      }
-    });
-  };
 
 
-  /* ---------------------------------------------------
-     CHECKBOX: pasar a pagado
-     FIX: estaba duplicado con 2 URLs distintas —
-          se conservan ambas llamadas en una sola función
-  --------------------------------------------------- */
+
+
+
   window.pasarpagado = function (pasarpagado_id) {
     var checkBox = document.getElementById('pasarpagado1a' + pasarpagado_id);
     if (!checkBox) return;
@@ -424,10 +384,7 @@ $(document).ready(function () {
   };
 
 
-  /* ---------------------------------------------------
-     BORRAR DOCUMENTO (SBborrar2) — comportamiento original
-     FIX: .off().on() en btnYes
-  --------------------------------------------------- */
+
   $(document).on('click', '.view_dataSBborrar2', function () {
     var borra_id_sb = $(this).attr('id');
     $('#dataModal3').modal('show');
@@ -449,10 +406,7 @@ $(document).ready(function () {
   });
 
 
-  /* ---------------------------------------------------
-     BORRAR PAGO PROVEEDOR (SBborrar) — comportamiento original
-     FIX: .off().on() en btnYes
-  --------------------------------------------------- */
+
   $(document).on('click', '.view_dataSBborrar', function () {
     var borra_id_PAGOP = $(this).attr('id');
     $('#dataModal3').modal('show');
@@ -493,116 +447,6 @@ $(document).ready(function () {
   });
 
 
-  /* ---------------------------------------------------
-     FILTROS DE ESTADO — centralizados
-  --------------------------------------------------- */
-  ['SOLICITADO','APROBADO','RECHAZADO','PAGADO','BORRAR'].forEach(function (estado) {
-    $(document).on('click', '.' + estado, function () {
-      var payload = {};
-      payload[estado] = estado;
-      $.ajax({
-        url: 'pagoproveedores/fetch_pagesPP.php',
-        method: 'POST',
-        data: payload,
-        beforeSend: function () { $('#mensajeSUBIRFACTURA').html('cargando...'); },
-        success: function () { if (typeof load === 'function') load(1); }
-      });
-    });
-  });
-
-
-  /* ---------------------------------------------------
-     BÚSQUEDA
-  --------------------------------------------------- */
-  $('#clickbuscar').on('click', function () {
-    var formData = new FormData($('#buscaform')[0]);
-    $.ajax({
-      url: 'pagoproveedores/fetch_pagesPP.php',
-      type: 'POST',
-      dataType: 'html',
-      data: formData,
-      cache: false,
-      contentType: false,
-      processData: false
-    }).done(function () {
-      if (typeof load === 'function') load(1);
-    }).fail(function () {
-      console.error('[clickbuscar] Error en búsqueda.');
-    });
-  });
-
-
-  /* ---------------------------------------------------
-     DATOS BANCARIOS 1
-  --------------------------------------------------- */
-  $('#enviarDATOSBANCARIOS1').on('click', function () {
-    var formData = new FormData($('#DATOSBANCARIOS1form')[0]);
-    $.ajax({
-      url: 'comprobaciones/controladorPP.php',
-      type: 'POST',
-      dataType: 'html',
-      data: formData,
-      cache: false,
-      contentType: false,
-      processData: false
-    }).done(function (data) {
-      if ($.trim(data) === 'Ingresado' || $.trim(data) === 'Actualizado') {
-        $('#mensajeDATOSBANCARIOS1').html("<span id='ACTUALIZADO'>" + data + "</span>");
-        recargarElemento('#resetBancario1p');
-      } else {
-        $('#mensajeDATOSBANCARIOS1').html(data);
-      }
-    }).fail(function () {
-      console.error('[enviarDATOSBANCARIOS1] Error en la petición.');
-    });
-  });
-
-  $(document).on('click', '.view_dataNUEVO', function () {
-    var personal_id = $(this).attr('id');
-    $.ajax({
-      url: 'pagoproveedores/VistaPreviaDatosBancario1.php',
-      method: 'POST',
-      data: { personal_id: personal_id },
-      beforeSend: function () { $('#mensajepagoproveedores').html('cargando...'); },
-      success: function (data) {
-        $('#personal_detalles2').html(data);
-        $('#dataModal').modal('toggle');
-      }
-    });
-  });
-
-  $(document).on('click', '.view_data_bancario1p_modifica', function () {
-    var personal_id = $(this).attr('id');
-    $.ajax({
-      url: 'pagoproveedores/VistaPreviaDatosBancario1.php',
-      method: 'POST',
-      data: { personal_id: personal_id },
-      beforeSend: function () { $('#mensajeDATOSBANCARIOS1').html('cargando...'); },
-      success: function (data) {
-        $('#personal_detalles').html(data);
-        $('#dataModal').modal('toggle');
-      }
-    });
-  });
-
-  $(document).on('click', '.view_databancario1borrar', function () {
-    var borra_id_bancaP = $(this).attr('id');
-    $('#dataModal3').modal('show');
-
-    $('#btnYes').off('click').on('click', function () {
-      $.ajax({
-        url: 'comprobaciones/controladorPP.php',
-        method: 'POST',
-        data: { borra_id_bancaP: borra_id_bancaP, borra_datos_bancario1: 'borra_datos_bancario1' },
-        beforeSend: function () { $('#mensajeREFERENCIAS').html('cargando...'); },
-        success: function (data) {
-          $('#dataModal3').modal('hide');
-          $('#mensajeDATOSBANCARIOS1').html("<span id='ACTUALIZADO'>" + data + "</span>");
-          if (typeof load === 'function') load(1);
-        }
-      });
-    });
-  });
 
 
   /* ---------------------------------------------------

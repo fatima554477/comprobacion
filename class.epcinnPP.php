@@ -5,8 +5,9 @@
 /*
 clase EPC INNOVA
 CREADO : 10/mayo/2023
-TESTER: FATIMA ARELLANO
-PROGRAMER: SANDOR ACTUALIZACION: 1 MAY 2023
+fecha sandor:
+feha fatima:  23/03/2023
+
 
 */
 	define('__ROOT3__', dirname(dirname(__FILE__)));
@@ -68,7 +69,7 @@ $variablequery = mysqli_query($conn,$variable);
 		$variable = "select * from 04altaeventos where NUMERO_EVENTO like '%".$filtro."%' ";
 $variablequery = mysqli_query($conn,$variable);
 		while($row = mysqli_fetch_array($variablequery, MYSQLI_ASSOC)){
-			//$resultado [] = $row['NUMERO_DE_EVENTO'];
+		
 			$resultado[] = ['id'=>$row['NUMERO_EVENTO'],'text'=>$row['NUMERO_EVENTO']];
 		}
 		return $resultado;
@@ -507,12 +508,7 @@ public function ingresar_usuario($conn,$nommbrerazon){
 		return $row = mysqli_fetch_array($arrayquery, MYSQLI_ASSOC);
 	}
 
-	/*public function ingresar_02direccionproveedor1($conn,$idwebc){
-		$queryrfc = "insert into 02direccionproveedor1 (idRelacion)values('".$idwebc."')";
-		$arrayquery = mysqli_query($conn,$queryrfc);
-		return $row = mysqli_fetch_array($arrayquery, MYSQLI_ASSOC);
-	}    */
-//ingresar_02direccionproveedor1
+
 
 	
 public function PAGOPRO ($NUMERO_CONSECUTIVO_PROVEE , $NOMBRE_COMERCIAL , $RAZON_SOCIAL , $RFC_PROVEEDOR , $NUMERO_EVENTO ,$NOMBRE_EVENTO, $MOTIVO_GASTO , $CONCEPTO_PROVEE , $MONTO_TOTAL_COTIZACION_ADEUDO , $MONTO_DEPOSITAR , $MONTO_PROPINA , $FECHA_AUTORIZACION_RESPONSABLE , $FECHA_AUTORIZACION_AUDITORIA , $FECHA_DE_LLENADO , $MONTO_FACTURA , $TIPO_DE_MONEDA , $PFORMADE_PAGO,$FECHA_DE_PAGO , $FECHA_A_DEPOSITAR , $STATUS_DE_PAGO ,$ACTIVO_FIJO, $GASTO_FIJO,$PAGAR_CADA,$FECHA_PPAGO,$FECHA_TPROGRAPAGO,$NUMERO_EVENTOFIJO,$CLASI_GENERAL,$SUB_GENERAL,$BANCO_ORIGEN , $MONTO_DEPOSITADO , $CLASIFICACION_GENERAL , $CLASIFICACION_ESPECIFICA , $PLACAS_VEHICULO , $MONTO_DE_COMISION , $POLIZA_NUMERO , $EJECUTIVOTARJETA,$NOMBRE_DEL_EJECUTIVO , $NOMBRE_DEL_AYUDO,$OBSERVACIONES_1, $TIPO_CAMBIOP,  $TOTAL_ENPESOS,$IMPUESTO_HOSPEDAJE,$IVA,$TImpuestosRetenidosIVA,$TImpuestosRetenidosISR,$descuentos, $ENVIARPAGOprovee,$hiddenpagoproveedores,$IPpagoprovee,
@@ -1185,32 +1181,81 @@ public function Listado_pagoproveedor(){ $conn = $this->db(); $variablequery = "
 
     public function Listado_subefacturaDOCTOS($ID) {
     $conn = $this->db();
-    $ID = mysqli_real_escape_string($conn, $ID);
-    
-    // Solo vincular documentos huérfanos de la SESIÓN ACTIVA,
-    // no de cualquier documento del proveedor
-    $idCGsesion = isset($_SESSION['idCG']) ? mysqli_real_escape_string($conn, $_SESSION['idCG']) : '';
-    
-    if ($idCGsesion != '') {
-        // Verificar que el registro $ID pertenece al proveedor de la sesión
-        $qVerifica = "SELECT id FROM 07COMPROBACION 
-                      WHERE id = '".$ID."' 
-                        AND idRelacion = '".$idCGsesion."' 
+   $ID = mysqli_real_escape_string($conn, (string)$ID);
+
+
+
+    $idRelacionComprobacion = '';
+
+    $qComprobacion = "SELECT idRelacion
+
+                      FROM 07COMPROBACION
+
+                      WHERE id = '".$ID."'
+
                       LIMIT 1";
-        $rVerifica = mysqli_query($conn, $qVerifica);
-        
-        if (mysqli_fetch_assoc($rVerifica)) {
-            // Solo vincular documentos de la sesión activa al registro correcto
-            $fix = "UPDATE 07COMPROBACIONDOCT 
-                    SET idTemporal = '".$ID."'
-                    WHERE idRelacion = '".$idCGsesion."' 
-                      AND idTemporal = 'si'";
-            mysqli_query($conn, $fix);
-        }
+
+                    
+   $rComprobacion = mysqli_query($conn, $qComprobacion);
+
+    if ($rComprobacion && ($rowComprobacion = mysqli_fetch_assoc($rComprobacion))) {
+
+        $idRelacionComprobacion = mysqli_real_escape_string($conn, (string)$rowComprobacion['idRelacion']);
+
     }
     
-    $variablequery = "SELECT * FROM 07COMPROBACIONDOCT 
-                      WHERE idTemporal = '".$ID."' 
+   $idCGsesion = isset($_SESSION['idCG']) ? mysqli_real_escape_string($conn, (string)$_SESSION['idCG']) : '';
+
+    $idRelacionVincular = '';
+
+
+
+    if ($idRelacionComprobacion != '') {
+
+        $idRelacionVincular = $idRelacionComprobacion;
+
+    } elseif ($idCGsesion != '') {
+
+        $idRelacionVincular = $idCGsesion;
+
+    }
+
+
+
+    if ($idRelacionVincular != '') {
+
+        $fix = "UPDATE 07COMPROBACIONDOCT
+
+                SET idTemporal = '".$ID."'
+
+                WHERE idRelacion = '".$idRelacionVincular."'
+
+                  AND idTemporal = 'si'";
+
+        mysqli_query($conn, $fix);
+
+    }
+
+
+
+    $condiciones = array();
+
+    $condiciones[] = "idTemporal = '".$ID."'";
+
+
+
+    if ($idRelacionVincular != '') {
+
+        $condiciones[] = "(idRelacion = '".$idRelacionVincular."' AND idTemporal = 'si')";
+
+    }
+
+
+
+    $variablequery = "SELECT * FROM 07COMPROBACIONDOCT
+
+                      WHERE (".implode(' OR ', $condiciones).")
+
                       ORDER BY id DESC";
     return mysqli_query($conn, $variablequery);
 }
