@@ -167,6 +167,10 @@ function ajax_file_upload1(file_obj, nombre) {
         $('#1' + nombre).html('<p style="color:red;">UUID PREVIAMENTE CARGADO.</p>');
         $('#' + nombre).val('');
 
+      } else if (resp === '4') {
+        $('#1' + nombre).html('<p style="color:red;">Ya existe un archivo adjunto. Primero bórralo para subir uno nuevo.</p>');
+        $('#' + nombre).val('');
+
       } else if (resp === 'El archivo debe estar en formato XML.') {
         $('#1' + nombre).html('<p style="color:red;">' + resp + '</p>');
         $('#' + nombre).val('');

@@ -1501,7 +1501,22 @@ public function Listado_pagoproveedor(){ $conn = $this->db(); $variablequery = "
     return mysqli_query($conn, $variablequery);
 }
 
-    public function Listado_subefacturadocto($ADJUNTAR_COTIZACION){ 
+	public function tiene_adjunto_factura($campo, $idRelacion) {
+		$conn = $this->db();
+		$campo = preg_replace('/[^a-zA-Z0-9_]/', '', $campo);
+		$idRelacion = mysqli_real_escape_string($conn, (string)$idRelacion);
+		$query = "SELECT COUNT(*) as total FROM 07COMPROBACIONDOCT
+		          WHERE idRelacion = '".$idRelacion."'
+		          AND idTemporal = 'si'
+		          AND ".$campo." IS NOT NULL
+		          AND ".$campo." <> ''";
+		$result = mysqli_query($conn, $query);
+		if (!$result) return false;
+		$row = mysqli_fetch_array($result, MYSQLI_ASSOC);
+		return intval($row['total']) > 0;
+	}
+
+    public function Listado_subefacturadocto($ADJUNTAR_COTIZACION){
 	$conn = $this->db();
 	
 	$CIERRE_TOTAL11= strtotime('-1 hours', strtotime(date("Y-m-d")));
