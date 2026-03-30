@@ -484,6 +484,25 @@ if($idCG == ''){
 	$_SESSION["idCG"] = $idCG;
 }
 
+// Bloquear carga duplicada de ADJUNTAR_FACTURA_XML y ADJUNTAR_FACTURA_PDF
+if(!empty($_FILES["ADJUNTAR_FACTURA_XML"]["name"]) && $idCG != ''){
+	if($pagoproveedores->tiene_adjunto_factura('ADJUNTAR_FACTURA_XML', $idCG)){
+		if(isset($ADJUNTAR_FACTURA_XML2) && $ADJUNTAR_FACTURA_XML2 != ''){
+			$_tmpPath = __ROOT1__.'/includes/archivos/'.$ADJUNTAR_FACTURA_XML2;
+			if(file_exists($_tmpPath)) unlink($_tmpPath);
+		}
+		echo "4";
+		exit;
+	}
+}
+if(!empty($_FILES["ADJUNTAR_FACTURA_PDF"]["name"]) && $idCG != ''){
+	if($pagoproveedores->tiene_adjunto_factura('ADJUNTAR_FACTURA_PDF', $idCG)){
+		echo "4";
+		exit;
+	}
+}
+
+
 if($IPpagoprovee !=''  and ($_FILES["ADJUNTAR_FACTURA_XML"] == true or $_FILES["ADJUNTAR_FACTURA_PDF"] == true or  $_FILES["ADJUNTAR_COTIZACION"] == true  or  $_FILES["CONPROBANTE_TRANSFERENCIA"] == true  or  $_FILES["ADJUNTAR_ARCHIVO_1"] == true or $_FILES["FOTO_ESTADO_PROVEE11"] == true  or  $_FILES["COMPLEMENTOS_PAGO_PDF"] == true or  $_FILES["COMPLEMENTOS_PAGO_XML"] == true or  $_FILES["CANCELACIONES_PDF"] == true or  $_FILES["CANCELACIONES_XML"] == true or  $_FILES ["ADJUNTAR_FACTURA_DE_COMISION_PDF"] == true or  $_FILES ["ADJUNTAR_FACTURA_DE_COMISION_XML"] == true or  $_FILES["CALCULO_DE_COMISION"] == true or  $_FILES["COMPROBANTE_DE_DEVOLUCION"] == true or  $_FILES["NOTA_DE_CREDITO_COMPRA"] == true )){
 if($IPpagoprovee != ''){
 
