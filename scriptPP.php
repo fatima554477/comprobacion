@@ -331,6 +331,10 @@ $(document).ready(function () {
 
 
   $('#enviarPAGOPROVEEDORES').off('click').on('click', function () {
+    var $btn = $(this);
+    if ($btn.prop('disabled')) return;
+    $btn.prop('disabled', true).text('Guardando...');
+
     actualizarFechaDeLlenado();
     var formData = new FormData($('#pagoaproveedoresform')[0]);
 
@@ -358,7 +362,7 @@ $(document).ready(function () {
           if (typeof load === 'function') load(1);
         }, 300);
 
-   
+
         activarTarget(2);
         var el = document.getElementById('target2');
         if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -369,6 +373,8 @@ $(document).ready(function () {
     }).fail(function () {
       mostrarMensajePago("<span id='ERROR'>Error en AJAX</span>");
       console.error('[enviarPAGOPROVEEDORES] Error en la petición.');
+    }).always(function () {
+      $btn.prop('disabled', false).text('GUARDAR');
     });
   });
 
