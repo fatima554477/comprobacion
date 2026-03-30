@@ -103,6 +103,49 @@ $variablequery = mysqli_query($conn,$variable);
 	}
 	
 
+/**
+ * Sobreescribe sologuardar6 del padre para el caso en que el archivo XML
+ * ya fue subido físicamente por solocargartemp(). El padre intenta volver
+ * a mover el archivo con move_uploaded_file(), pero el tmp_name ya no es
+ * válido porque solocargartemp() lo movió primero. Esta versión se salta
+ * el upload y directamente persiste el nombre del archivo en la BD.
+ */
+public function sologuardar6($etiqueta, $filename_ya_subido, $tabla, $idRelacion, $idPagoprovee) {
+    if (empty($filename_ya_subido) || $filename_ya_subido === '1' || $filename_ya_subido === '2') {
+        return '';
+    }
+
+    $conn = $this->db();
+    $fn  = mysqli_real_escape_string($conn, trim($filename_ya_subido));
+    $rel = mysqli_real_escape_string($conn, (string)$idRelacion);
+    $pag = mysqli_real_escape_string($conn, (string)$idPagoprovee);
+
+    if ($idPagoprovee != '') {
+        // Modo actualización: actualizar el registro que corresponde a esta comprobación
+        $q = "UPDATE ".$tabla." SET ADJUNTAR_FACTURA_XML = '".$fn."' WHERE idTemporal = '".$pag."'";
+        mysqli_query($conn, $q);
+        if (mysqli_affected_rows($conn) == 0) {
+            // Si no se encontró por idTemporal, actualizar el registro temporal más reciente
+            $q2 = "UPDATE ".$tabla." SET ADJUNTAR_FACTURA_XML = '".$fn."' WHERE idRelacion = '".$rel."' AND idTemporal = 'si' ORDER BY id DESC LIMIT 1";
+            mysqli_query($conn, $q2);
+        }
+    } else {
+        // Modo nuevo registro: actualizar temporal existente o insertar uno nuevo
+        $check = "SELECT id FROM ".$tabla." WHERE idRelacion = '".$rel."' AND idTemporal = 'si' ORDER BY id DESC LIMIT 1";
+        $res = mysqli_query($conn, $check);
+        $row = mysqli_fetch_assoc($res);
+        if ($row) {
+            $q = "UPDATE ".$tabla." SET ADJUNTAR_FACTURA_XML = '".$fn."' WHERE id = '".$row['id']."'";
+            mysqli_query($conn, $q);
+        } else {
+            $q = "INSERT INTO ".$tabla." (ADJUNTAR_FACTURA_XML, idRelacion, idTemporal) VALUES ('".$fn."', '".$rel."', 'si')";
+            mysqli_query($conn, $q);
+        }
+    }
+
+    return $filename_ya_subido;
+}
+
 public function solocargartemp($archivo)
 {
     $nombre_carpeta = __ROOT2__.'/includes/archivos';

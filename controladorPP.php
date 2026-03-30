@@ -497,7 +497,7 @@ foreach($_FILES AS $ETQIETA => $VALOR){
 //AAAQUI
 
 	if($_FILES['ADJUNTAR_FACTURA_XML']==true){
-	$ADJUNTAR_FACTURA_XML = $conexion->sologuardar6($ETQIETA,$ADJUNTAR_FACTURA_XML2,'07COMPROBACIONDOCT',$idCG,$IPpagoprovee);	
+	$ADJUNTAR_FACTURA_XML = $pagoproveedores->sologuardar6($ETQIETA,$ADJUNTAR_FACTURA_XML2,'07COMPROBACIONDOCT',$idCG,$IPpagoprovee);
 	}else{
 	$ADJUNTAR_FACTURA_XML = $conexion->cargar($ETQIETA,'07COMPROBACIONDOCT','6',$IPpagoprovee,'si',$IPpagoprovee);
 	}
