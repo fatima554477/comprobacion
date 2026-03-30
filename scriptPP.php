@@ -193,9 +193,25 @@ function ajax_file_upload1(file_obj, nombre) {
 }
 
 
+var _recargarXHR = {};
 
 function recargarElemento(selector) {
-  $(selector).load(location.href + ' ' + selector);
+    if (_recargarXHR[selector]) {
+    _recargarXHR[selector].abort();
+  }
+  _recargarXHR[selector] = $.get(location.href, function(data) {
+    var $match = $('<div>').html(data).find(selector);
+    if ($match.length) {
+      $(selector).html($match.html());
+    }
+    delete _recargarXHR[selector];
+  }).fail(function(jqXHR) {
+    if (jqXHR.statusText !== 'abort') {
+      console.error('recargarElemento error:', selector);
+    }
+    delete _recargarXHR[selector];
+  });
+
 }
 
 
