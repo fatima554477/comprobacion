@@ -424,9 +424,14 @@ $(document).ready(function () {
         success: function (data) {
           $('#dataModal3').modal('hide');
           $('#mensajepagoproveedores').html("<span id='ACTUALIZADO'>" + data + "</span>");
-          recargarElemento('#' + borra_id_sb);
-          recargarElemento('#A' + borra_id_sb);
-          location.reload();
+          var $span = $('#' + borra_id_sb);
+          var $link = $('#A' + borra_id_sb);
+          var $dateSpan = $span.next('span');
+          var $br = $dateSpan.next('br');
+          $link.remove();
+          $dateSpan.remove();
+          $br.remove();
+          $span.remove();
         }
       });
     });
