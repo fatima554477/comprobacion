@@ -2,7 +2,7 @@
 
 /**
  	--------------------------
-	Autor: Sandor Matamoros
+
 	Programer: Fatima Arellano
 	Propietario: EPC
 	fecha sandor: 
@@ -39,6 +39,7 @@ if($action == "ajax"){
 	$RFC_PROVEEDOR = isset($_POST["RFC_PROVEEDOR"]) ? $_POST["RFC_PROVEEDOR"] : ""; 
 	$NOMBRE_EVENTO = isset($_POST["NOMBRE_EVENTO"]) ? $_POST["NOMBRE_EVENTO"] : ""; 
 	$MOTIVO_GASTO = isset($_POST["MOTIVO_GASTO"]) ? $_POST["MOTIVO_GASTO"] : ""; 
+	$STATUS_RECHAZADO = isset($_POST["STATUS_RECHAZADO"]) ? $_POST["STATUS_RECHAZADO"] : ""; 
 	$CONCEPTO_PROVEE = isset($_POST["CONCEPTO_PROVEE"]) ? $_POST["CONCEPTO_PROVEE"] : ""; 
 	$MONTO_TOTAL_COTIZACION_ADEUDO = isset($_POST["MONTO_TOTAL_COTIZACION_ADEUDO"]) ? $_POST["MONTO_TOTAL_COTIZACION_ADEUDO"] : ""; 
 	$MONTO_FACTURA = isset($_POST["MONTO_FACTURA"]) ? $_POST["MONTO_FACTURA"] : ""; 
@@ -799,24 +800,39 @@ while ($rowDOCTOS = mysqli_fetch_array($querycontrasDOCTOS)) {
 <input type="checkbox" style="width:30PX;" checked="checked" disabled="disabled" class="form-check-input" id="STATUS_RESPONSABLE_EVENTO<?php echo $row["07COMPROBACIONid"]; ?>"  name="STATUS_RESPONSABLE_EVENTO<?php echo $row["07COMPROBACIONid"]; ?>" value="<?php echo $row["07COMPROBACIONid"]; ?>" onclick="STATUS_RESPONSABLE_EVENTO(<?php echo $row["07COMPROBACIONid"]; ?>)" <?php if($row["STATUS_RESPONSABLE_EVENTO"]=='si'){ echo "checked"; } $colspan += 1; ?>/>
 </td>
 
-<td style="text-align:center; background:<?php echo ($row["STATUS_VENTAS"] == 'si') ? '#ceffcc' : '#e9d8ee'; ?>;" id="color_VENTAS<?php echo $row["07COMPROBACIONid"]; ?>" >
-    <input type="checkbox"
-        style="width:30px;"
-        class="form-check-input"
-        id="STATUS_VENTAS<?php echo $row["07COMPROBACIONid"]; ?>"
-        name="STATUS_VENTAS<?php echo $row["07COMPROBACIONid"]; ?>"
-        value="<?php echo $row["07COMPROBACIONid"]; ?>"
-        onclick="STATUS_VENTAS(<?php echo $row["07COMPROBACIONid"]; ?>)"
-       <?php
-            $atributosVentas = [];
-            if ($row["STATUS_VENTAS"] == 'si') { $atributosVentas[] = 'checked'; }
-            $numeroEventoRegistro = isset($row["NUMERO_EVENTO"]) ? strtoupper(trim((string) $row["NUMERO_EVENTO"])) : '';
-            $tienePermisoVenta = $numeroEventoRegistro !== '' && isset($eventosAutorizadosVentas[$numeroEventoRegistro]);
-            if (!$tienePermisoVenta) { $atributosVentas[] = 'disabled'; }
-            echo implode(' ', $atributosVentas);
-        ?>
-    />
-    <?php $colspan += 1; ?>
+
+<?php
+$statusRechazado = isset($row["STATUS_RECHAZADO"]) ? $row["STATUS_RECHAZADO"] : 'no';
+$numeroEventoRegistro = isset($row["NUMERO_EVENTO"]) ? strtoupper(trim((string)$row["NUMERO_EVENTO"])) : '';
+$tienePermisoVenta = $numeroEventoRegistro !== '' && isset($eventosAutorizadosVentas[$numeroEventoRegistro]);
+?>
+<!-- VENTAS -->
+<td style="text-align:center; background:<?php echo ($row["STATUS_VENTAS"] == 'si') ? '#ceffcc' : '#e9d8ee'; ?>;"
+	id="color_VENTAS<?php echo $row["07COMPROBACIONid"]; ?>">
+	<input type="checkbox" style="width:30px;" class="form-check-input"
+		id="STATUS_VENTAS<?php echo $row["07COMPROBACIONid"]; ?>"
+		name="STATUS_VENTAS<?php echo $row["07COMPROBACIONid"]; ?>"
+		value="<?php echo $row["07COMPROBACIONid"]; ?>"
+		data-permiso-principal="<?php echo $tienePermisoVenta ? 'si' : 'no'; ?>"
+		onclick="STATUS_VENTAS(<?php echo $row["07COMPROBACIONid"]; ?>)"
+		<?php
+		$atributosVentas = [];
+		if ($row["STATUS_VENTAS"] === 'si') {
+			$atributosVentas[] = 'checked';
+			$atributosVentas[] = 'disabled';
+		} else {
+			if ($statusRechazado === 'si') {
+				$atributosVentas[] = 'disabled';
+				$atributosVentas[] = 'style="cursor:not-allowed;"';
+				$atributosVentas[] = 'title="No se puede autorizar por ventas: pago rechazado"';
+			} elseif (!$tienePermisoVenta) {
+				$atributosVentas[] = 'disabled';
+			}
+		}
+		echo implode(' ', $atributosVentas);
+		?> />
+	<?php $colspan += 1; ?>
+
 </td>
 
 <td style="text-align:center; background:<?php echo ($row["STATUS_FINANZAS"] == 'si') ? '#ceffcc' : '#e9d8ee'; ?>;" id="color_FINANZAS<?php echo $row["07COMPROBACIONid"]; ?>">
@@ -895,7 +911,9 @@ while ($rowDOCTOS = mysqli_fetch_array($querycontrasDOCTOS)) {
 </td>
 
 <?php if ($p_rechazo_ver) { ?>
-<td style="text-align:center; background:<?php $statusRechazado = isset($row["STATUS_RECHAZADO"]) ? $row["STATUS_RECHAZADO"] : 'no'; echo ($statusRechazado == 'si') ? '#ceffcc' : '#e9d8ee'; ?>;" id="color_RECHAZADO<?php echo $row["07COMPROBACIONid"]; ?>">
+<td style="text-align:center; background:
+	<?php echo ($statusRechazado == 'si') ? '#ceffcc' : '#e9d8ee'; ?>;"
+id="color_RECHAZADO<?php echo $row["07COMPROBACIONid"]; ?>">
     <?php
         $motivoRechazo = $database->obtener_motivo_rechazo($row["07COMPROBACIONid"]);
         $statusVentasAutorizado = isset($row["STATUS_VENTAS"]) && $row["STATUS_VENTAS"] == 'si';
@@ -1108,15 +1126,30 @@ $totales2 = 'si';
 
 <?php if($database->plantilla_filtro($nombreTabla,"total",$altaeventos,$DEPARTAMENTO)=="si"){ ?>
 <td style="text-align:center" id="montoOriginal_<?php echo $row['07COMPROBACIONid']; ?>"><?php 
-$total123 = isset($row['total'])?$row['total']:'' ;
-$MONTO_DEPOSITAR123 = isset($row['MONTO_DEPOSITAR'])?$row['MONTO_DEPOSITAR']:'' ;
-if ($total123 > 0) { $porfalta = number_format($total123,2,'.',','); $porfalta2 = ($total123); }
-ELSE { $porfalta = number_format($MONTO_DEPOSITAR123,2,'.',','); $porfalta2 = ($MONTO_DEPOSITAR123); } 
-$totalf12 += $porfalta2;
-echo $porfalta;
-$totales2 = 'si';
-?></td><?php } ?>
+$STATUS_RECHAZADO = isset($row['STATUS_RECHAZADO']) ? $row['STATUS_RECHAZADO'] : '';
+if (isset($STATUS_RECHAZADO) && $STATUS_RECHAZADO == "si") {
+    $porfalta  = '0.00';
+    $porfalta2 = 0;
+    $totalf12 += 0;
+    echo $porfalta;
+    $totales2 = 'si';
+} else {
+    $total123           = isset($row['total'])           ? $row['total']           : '';
+    $MONTO_DEPOSITAR123 = isset($row['MONTO_DEPOSITAR']) ? $row['MONTO_DEPOSITAR'] : '';
 
+    if ($total123 > 0) { 
+        $porfalta  = number_format($total123, 2, '.', ','); 
+        $porfalta2 = $total123; 
+    } else { 
+        $porfalta  = number_format($MONTO_DEPOSITAR123, 2, '.', ','); 
+        $porfalta2 = $MONTO_DEPOSITAR123; 
+    }
+
+    $totalf12 += $porfalta2;
+    echo $porfalta;
+    $totales2 = 'si';
+}
+?></td><?php } ?>
 <td style="text-align:center" id="valorCalculado_<?php echo $row['07COMPROBACIONid']; ?>">
     <?php 
         if (($row['STATUS_CHECKBOX'] === 'no' || $row['STATUS_CHECKBOX'] === null) && strlen(trim($row['UUID'])) < 1) {
