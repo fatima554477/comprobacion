@@ -331,6 +331,10 @@ $(document).ready(function () {
 
 
   $('#enviarPAGOPROVEEDORES').off('click').on('click', function () {
+	      var $btn = $(this);
+    if ($btn.prop('disabled')) return;
+    $btn.prop('disabled', true).text('Guardando...');
+
     actualizarFechaDeLlenado();
     var formData = new FormData($('#pagoaproveedoresform')[0]);
 
@@ -369,6 +373,9 @@ $(document).ready(function () {
     }).fail(function () {
       mostrarMensajePago("<span id='ERROR'>Error en AJAX</span>");
       console.error('[enviarPAGOPROVEEDORES] Error en la petición.');
+	      }).always(function () {
+      $btn.prop('disabled', false).text('GUARDAR');
+
     });
   });
 
@@ -469,18 +476,26 @@ $(document).ready(function () {
 
 
   /* ---------------------------------------------------
-     ENVIAR NUEVO
+     BORRAR DOCUMENTO (SBborrar2) — comportamiento original
   --------------------------------------------------- */
-  $('#enviar_NUEVO').on('click', function () {
-    $.ajax({
-      url: 'pagoproveedores/VistaPreviaNUEVOproveedor.php',
-      method: 'POST',
-      data: { personal_id: typeof personal_id !== 'undefined' ? personal_id : '' },
-      beforeSend: function () { $('#mensajepagoproveedores').html('cargando...'); },
-      success: function (data) {
-        $('#personal_detalles').html(data);
-        $('#dataModal').modal('toggle');
-      }
+  $(document).on('click', '.view_dataSBborrar2', function () {
+    var borra_id_sb = $(this).attr('id');
+    $('#dataModal3').modal('show');
+
+    $('#btnYes').off('click').on('click', function () {
+      $.ajax({
+        url: 'comprobaciones/controladorPP.php',
+        method: 'POST',
+        data: { borra_id_sb: borra_id_sb, borrasbdoc: 'borrasbdoc' },
+        beforeSend: function () { $('#mensajepagoproveedores').html('cargando...'); },
+        success: function (data) {
+          $('#dataModal3').modal('hide');
+          $('#mensajepagoproveedores').html('<span id="ACTUALIZADO">' + data + '</span>');
+          // Recarga solo la fila afectada y su par (comportamiento original)
+          $('#' + borra_id_sb).load(location.href + ' #' + borra_id_sb);
+          $('#A' + borra_id_sb).load(location.href + ' #A' + borra_id_sb);
+        }
+      });
     });
   });
 
