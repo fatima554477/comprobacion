@@ -426,6 +426,7 @@ $(document).ready(function () {
           $('#mensajepagoproveedores').html("<span id='ACTUALIZADO'>" + data + "</span>");
           recargarElemento('#' + borra_id_sb);
           recargarElemento('#A' + borra_id_sb);
+          location.reload();
         }
       });
     });
