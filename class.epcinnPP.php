@@ -1360,16 +1360,43 @@ $var4 = "DELETE FROM `07COMPROBACION_BITACORA` WHERE `id_comprobacion` = '".$id.
 	return $row['id'];	
 }
 
+
 	public function VALIDA02XMLUUID($uuid){
 $conn = $this->db(); 
-$variablequery = "select id,UUID from 07XML where UUID = '".$uuid."' "; 
+$variablequery = "select id,UUID,ultimo_id from 07XML where UUID = '".$uuid."' order by id desc limit 1 "; 
 $arrayquery = mysqli_query($conn,$variablequery);
 $row = mysqli_fetch_array($arrayquery, MYSQLI_ASSOC);
 if($row['id']==0 or $row['id']==''){
 	return 'S';
 }else{
+	if($row['ultimo_id'] != '' && $row['ultimo_id'] != '0'){
+		return $row['ultimo_id'];
+	}
 	return $row['id'];	
 }
+}
+
+	public function VALIDA02XMLUUID_DETALLE($uuid){
+$conn = $this->db();
+$variablequery = "select x.id, x.ultimo_id, c.NUMERO_EVENTO
+from 07XML x
+left join 07COMPROBACION c on c.id = x.ultimo_id
+where x.UUID = '".$uuid."'
+order by x.id desc
+limit 1";
+$arrayquery = mysqli_query($conn,$variablequery);
+$row = mysqli_fetch_array($arrayquery, MYSQLI_ASSOC);
+if($row['id']==0 or $row['id']==''){
+	return 'S';
+}
+
+$idMostrar = $row['id'];
+if($row['ultimo_id'] != '' && $row['ultimo_id'] != '0'){
+	$idMostrar = $row['ultimo_id'];
+}
+$numeroEvento = isset($row['NUMERO_EVENTO']) ? trim($row['NUMERO_EVENTO']) : '';
+
+return $idMostrar.'|'.$numeroEvento;
 }
 
 
@@ -1526,8 +1553,74 @@ public function Listado_pagoproveedor(){ $conn = $this->db(); $variablequery = "
 	$variablequeryborra = "DELETE FROM 07COMPROBACIONDOCT WHERE `fechaingreso` <= '".$nuevafecha2."' and idRelacion = '".$_SESSION['idCG']."' and idTemporal = 'si'  ";
 	mysqli_query($conn,$variablequeryborra);
 
-	$variablequery = "select id,".$ADJUNTAR_COTIZACION.",fechaingreso from 07COMPROBACIONDOCT where idRelacion = '".$_SESSION['idCG']."' and idTemporal = 'si' and (".$ADJUNTAR_COTIZACION." is not null or ".$ADJUNTAR_COTIZACION." <> '') ORDER BY id DESC "; 
+$variablequery = "select id,".$ADJUNTAR_COTIZACION.",fechaingreso from 07COMPROBACIONDOCT where idRelacion = '".$_SESSION['idCG']."' and idTemporal = 'si' and (".$ADJUNTAR_COTIZACION." is not null and ".$ADJUNTAR_COTIZACION." <> '') ORDER BY id DESC "; 
 	return $arrayquery = mysqli_query($conn,$variablequery); 
+	}
+
+	public function reemplazar_adjunto_unico_pago($idRelacion, $idTemporal, $campo, $nombreActual, $rutaArchivos){
+		$conn = $this->db();
+		$camposPermitidos = array('ADJUNTAR_FACTURA_XML', 'ADJUNTAR_FACTURA_PDF');
+		if(!in_array($campo, $camposPermitidos, true)){
+			return;
+		}
+
+		$idRelacion = mysqli_real_escape_string($conn, (string)$idRelacion);
+		$idTemporal = ($idTemporal === '' || $idTemporal === false || $idTemporal === null) ? 'si' : (string)$idTemporal;
+		$idTemporal = mysqli_real_escape_string($conn, $idTemporal);
+		$nombreActual = trim((string)$nombreActual);
+		$rutaBase = rtrim((string)$rutaArchivos, '/').'/';
+
+		$consulta = "SELECT id, ".$campo." AS archivo
+					FROM 07COMPROBACIONDOCT
+					WHERE idRelacion = '".$idRelacion."'
+					AND idTemporal = '".$idTemporal."'
+					AND ".$campo." IS NOT NULL
+					AND ".$campo." <> ''
+					ORDER BY id DESC";
+		$res = mysqli_query($conn, $consulta);
+		if(!$res){
+			return;
+		}
+
+		$rows = array();
+		while($row = mysqli_fetch_array($res, MYSQLI_ASSOC)){
+			$rows[] = $row;
+		}
+
+		if(count($rows) <= 1){
+			return;
+		}
+
+		$idConservar = intval($rows[0]['id']);
+		foreach($rows as $row){
+			if($nombreActual !== '' && trim((string)$row['archivo']) === $nombreActual){
+				$idConservar = intval($row['id']);
+				break;
+			}
+		}
+
+		foreach($rows as $row){
+			$idFila = intval($row['id']);
+			if($idFila === $idConservar){
+				continue;
+			}
+
+			$archivo = trim((string)$row['archivo']);
+			if($archivo !== '' && $archivo !== $nombreActual){
+				$rutaCompleta = $rutaBase.$archivo;
+				if(file_exists($rutaCompleta)){
+					@unlink($rutaCompleta);
+				}
+			}
+
+			$delete = "DELETE FROM 07COMPROBACIONDOCT WHERE id = '".$idFila."'";
+			mysqli_query($conn, $delete);
+		}
+
+		if($campo === 'ADJUNTAR_FACTURA_XML' && $idTemporal !== 'si'){
+			$deleteXml = "DELETE FROM 07XML WHERE ultimo_id = '".$idTemporal."'";
+			mysqli_query($conn, $deleteXml);
+		}
 	}
 	
   public function delete_subefacturadocto2($id){ $conn = $this->db();

@@ -13,6 +13,24 @@ $conexion = NEW colaboradores();
 $conexion2 = new herramientas();
 
 
+
+function normalizarTextoEmpresaVO($texto){
+    $texto = mb_strtoupper(trim((string)$texto), 'UTF-8');
+    $texto = preg_replace('/\s+/', ' ', $texto);
+    return $texto;
+}
+
+function receptorPermitidoEmpresaVO($nombreReceptor){
+    $empresasCorporativo = array(
+        normalizarTextoEmpresaVO('EVENTOS PROMOCIONES Y CONVENCIONES'),
+        normalizarTextoEmpresaVO('INNOVA CONGRESOS Y CONVENCIONES'),
+        normalizarTextoEmpresaVO('EVENTOS 520')
+    );
+
+    $nombreReceptorNormalizado = normalizarTextoEmpresaVO($nombreReceptor);
+    return $nombreReceptorNormalizado !== '' && in_array($nombreReceptorNormalizado, $empresasCorporativo, true);
+}
+
 $hiddenpagoproveedores = isset($_POST["hiddenpagoproveedores"])?$_POST["hiddenpagoproveedores"]:"";
 $validaDATOSBANCARIOS1 = isset($_POST["validaDATOSBANCARIOS1"])?$_POST["validaDATOSBANCARIOS1"]:"";
 $ENVIARRdatosbancario1p = isset($_POST["ENVIARRdatosbancario1p"])?$_POST["ENVIARRdatosbancario1p"]:"";
@@ -435,6 +453,15 @@ if( $_FILES["ADJUNTAR_FACTURA_XML"] == true){
 	//$explotado = explode('^',$ADJUNTAR_FACTURA_XML2);
 	$url = __ROOT1__.'/includes/archivos/'.$ADJUNTAR_FACTURA_XML2;	
 	$regreso = $conexion2->lectorxml($url);
+	$nombreR = isset($regreso['nombreR']) ? $regreso['nombreR'] : '';
+	if(!receptorPermitidoEmpresaVO($nombreR)){
+		echo '6^^'.trim((string)$nombreR);
+		if(file_exists($url)){
+			UNLINK($url);
+		}
+		$pagoproveedores->delete_subefactura2nombre($ADJUNTAR_FACTURA_XML2);
+		exit;
+	}
 	$rfcE = $regreso['rfcE'];					
 	$nombreE = $regreso['nombreE'];
 	$conn = $conexion->db();//verificar_usuario	
@@ -488,23 +515,29 @@ if($IPpagoprovee !=''  and ($_FILES["ADJUNTAR_FACTURA_XML"] == true or $_FILES["
 if($IPpagoprovee != ''){
 
 foreach($_FILES AS $ETQIETA => $VALOR){
+	if(!isset($_FILES[$ETQIETA]['name']) || trim((string)$_FILES[$ETQIETA]['name']) === ''){
+		continue;
+	}
 
 
 
-	if($_FILES['ADJUNTAR_FACTURA_XML']==true){
+	if($ETQIETA === 'ADJUNTAR_FACTURA_XML'){
 	$ADJUNTAR_FACTURA_XML = $conexion->sologuardar6($ETQIETA,$ADJUNTAR_FACTURA_XML2,'07COMPROBACIONDOCT',$idCG,$IPpagoprovee);	
 	}else{
 	$ADJUNTAR_FACTURA_XML = $conexion->cargar($ETQIETA,'07COMPROBACIONDOCT','6',$IPpagoprovee,'si',$IPpagoprovee);
 	}
 	
+	if($ETQIETA === 'ADJUNTAR_FACTURA_XML' || $ETQIETA === 'ADJUNTAR_FACTURA_PDF'){
+		$pagoproveedores->reemplazar_adjunto_unico_pago($idCG, $IPpagoprovee, $ETQIETA, $ADJUNTAR_FACTURA_XML, __ROOT1__.'/includes/archivos/');
+	}
 	
 	/*NUEVO INICIO*///$ADJUNTAR_FACTURA_XML = <------NUEVO
 	$url ='';
-	if($_FILES['ADJUNTAR_FACTURA_XML']==true){
+	if($ETQIETA === 'ADJUNTAR_FACTURA_XML'){
 	$url = __ROOT1__.'/includes/archivos/'.$ADJUNTAR_FACTURA_XML;
 	if( file_exists($url) ){
 		$regreso = $conexion2->lectorxml($url);
-		$resultado = $pagoproveedores->VALIDA02XMLUUID($regreso['UUID']);
+		$resultado = $pagoproveedores->VALIDA02XMLUUID_DETALLE($regreso['UUID']);
 		if($resultado == 'S'){
 			
 		$pagoproveedores->borrar_xmls(__ROOT1__.'/includes/archivos/',$IPpagoprovee,$ADJUNTAR_FACTURA_XML,'07XML','07COMPROBACIONDOCT');
@@ -514,8 +547,8 @@ foreach($_FILES AS $ETQIETA => $VALOR){
 			$pagoproveedores->guardarxmlDB2($IPpagoprovee,$idCG,'07XML', $url);
 				ob_end_clean();
 			$pagoproveedores->registrar_bitacora_adjuntos($IPpagoprovee, 'XML', $ADJUNTAR_FACTURA_XML);
-		}else{
-			echo '3';
+	}else{
+			echo '3|'.$resultado;
 			UNLINK($url);
 			$pagoproveedores->delete_subefactura2nombre($ADJUNTAR_FACTURA_XML);
 		}
@@ -553,25 +586,32 @@ if($IPpagoprovee =='' and $hiddenpagoproveedores != 'hiddenpagoproveedores' and 
 if($idCG != ''){
 
 foreach($_FILES AS $ETQIETA => $VALOR){
+	if(!isset($_FILES[$ETQIETA]['name']) || trim((string)$_FILES[$ETQIETA]['name']) === ''){
+		continue;
+	}
 //	ECHO "AAAAAAAAAAAA2";	
 
-	if($_FILES['ADJUNTAR_FACTURA_XML']==true){
+	if($ETQIETA === 'ADJUNTAR_FACTURA_XML'){
 	$ADJUNTAR_FACTURA_XML = $pagoproveedores->sologuardar6($ETQIETA,$ADJUNTAR_FACTURA_XML2,'07COMPROBACIONDOCT',$idCG,$IPpagoprovee);	
 	}else{
 	$ADJUNTAR_FACTURA_XML = $conexion->cargar($ETQIETA,'07COMPROBACIONDOCT','6',$idCG,'si','');
+	}
+
+	if($ETQIETA === 'ADJUNTAR_FACTURA_XML' || $ETQIETA === 'ADJUNTAR_FACTURA_PDF'){
+		$pagoproveedores->reemplazar_adjunto_unico_pago($idCG, 'si', $ETQIETA, $ADJUNTAR_FACTURA_XML, __ROOT1__.'/includes/archivos/');
 	}	
 	
 	/*NUEVO INICIO*///$ADJUNTAR_FACTURA_XML = <------NUEVO
 	$url ='';
-	if($_FILES['ADJUNTAR_FACTURA_XML']==true){
+	if($ETQIETA === 'ADJUNTAR_FACTURA_XML'){
 	$url = __ROOT1__.'/includes/archivos/'.$ADJUNTAR_FACTURA_XML;
 	if( file_exists($url) ){
 		$regreso = $conexion2->lectorxml($url);
-		$resultado = $pagoproveedores->VALIDA02XMLUUID($regreso['UUID']);
+	$resultado = $pagoproveedores->VALIDA02XMLUUID_DETALLE($regreso['UUID']);
 		if($resultado == 'S'){
 			echo $ADJUNTAR_FACTURA_XML;
 		}else{
-			echo '3';
+			echo '3|'.$resultado;
 			UNLINK($url);
 			$pagoproveedores->delete_subefactura2nombre($ADJUNTAR_FACTURA_XML);
 		}

@@ -1,6 +1,6 @@
 <?php
 /*
- * Autor: 
+
  * Programer: Fatima Arellano
  * Propietario: EPC
  * fecha sandor;
@@ -130,6 +130,11 @@
 
 var fileobj;
 
+
+function normalizarTextoEmpresaVO(texto) {
+  return (texto || '').toString().trim().toUpperCase().replace(/\s+/g, ' ');
+}
+
 function upload_file(e, name) {
   e.preventDefault();
   fileobj = e.dataTransfer.files[0];
@@ -163,8 +168,18 @@ function ajax_file_upload1(file_obj, nombre) {
     success: function (response) {
       var resp = $.trim(response);
 
-      if (resp === '3') {
-        $('#1' + nombre).html('<p style="color:red;">UUID PREVIAMENTE CARGADO.</p>');
+   if (resp === '3' || resp.indexOf('3|') === 0) {
+        var partesDuplicado = resp.split('|');
+        var idDuplicado = partesDuplicado.length > 1 ? partesDuplicado[1] : '';
+        var numeroEventoDuplicado = partesDuplicado.length > 2 ? partesDuplicado[2] : '';
+        var mensajeDuplicado = 'UUID PREVIAMENTE CARGADO ';
+        if (idDuplicado !== '') {
+          mensajeDuplicado += 'CON EL ID:  ' + idDuplicado + '.';
+        }
+        if (numeroEventoDuplicado !== '') {
+          mensajeDuplicado += 'Y EN EL NÚMERO DE EVENTO: ' + numeroEventoDuplicado + '.';
+        }
+        $('#1' + nombre).html('<p style="color:red;"><strong>' + mensajeDuplicado + '</strong></p>');
         $('#' + nombre).val('');
       } else if (resp === '4') {
         $('#1' + nombre).html('<p style="color:red;">Ya existe un archivo adjunto. Primero bórralo para subir uno nuevo.</p>');
@@ -172,6 +187,13 @@ function ajax_file_upload1(file_obj, nombre) {
 
       } else if (resp === 'El archivo debe estar en formato XML.') {
         $('#1' + nombre).html('<p style="color:red;">' + resp + '</p>');
+        $('#' + nombre).val('');
+
+      } else if (resp.indexOf('6^^') === 0) {
+        var partesReceptor = resp.split('^^');
+        var receptorOriginal = partesReceptor.length > 1 ? partesReceptor[1] : '';
+        var receptorNormalizado = normalizarTextoEmpresaVO(receptorOriginal);
+        $('#1' + nombre).html('<p style="color:red;font-weight:600;">EL RECEPTOR DE LA FACTURA NO ES: EPC, INN, EVE520. RECEPTOR DETECTADO: <strong>' + receptorNormalizado + '</strong></p>');
         $('#' + nombre).val('');
 
       } else {
@@ -263,7 +285,7 @@ function mostrarMensajePago(html) {
 $(document).ready(function () {
 
 
-  activarTarget(1);
+  activarTarget(null);
 
 
   var allNums = [];
