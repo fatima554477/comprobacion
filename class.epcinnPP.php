@@ -1376,27 +1376,42 @@ if($row['id']==0 or $row['id']==''){
 }
 }
 
-	public function VALIDA02XMLUUID_DETALLE($uuid){
-$conn = $this->db();
-$variablequery = "select x.id, x.ultimo_id, c.NUMERO_EVENTO
-from 07XML x
-left join 07COMPROBACION c on c.id = x.ultimo_id
-where x.UUID = '".$uuid."'
-order by x.id desc
-limit 1";
-$arrayquery = mysqli_query($conn,$variablequery);
-$row = mysqli_fetch_array($arrayquery, MYSQLI_ASSOC);
-if($row['id']==0 or $row['id']==''){
-	return 'S';
-}
+public function VALIDA02XMLUUID_DETALLE($uuid){
+    $conn = $this->db();
+    $uuid = mysqli_real_escape_string($conn, $uuid);
 
-$idMostrar = $row['id'];
-if($row['ultimo_id'] != '' && $row['ultimo_id'] != '0'){
-	$idMostrar = $row['ultimo_id'];
-}
-$numeroEvento = isset($row['NUMERO_EVENTO']) ? trim($row['NUMERO_EVENTO']) : '';
+    // ── Verificar en 07XML (Comprobación de Gastos) ──
+    $variablequery = "select x.id, x.ultimo_id, c.NUMERO_EVENTO
+    from 07XML x
+    left join 07COMPROBACION c on c.id = x.ultimo_id
+    where x.UUID = '".$uuid."'
+    order by x.id desc
+    limit 1";
+    $arrayquery = mysqli_query($conn,$variablequery);
+    $row = mysqli_fetch_array($arrayquery, MYSQLI_ASSOC);
+    if($row['id']){
+        $idMostrar = $row['id'];
+        if($row['ultimo_id'] != '' && $row['ultimo_id'] != '0'){
+            $idMostrar = $row['ultimo_id'];
+        }
+        $numeroEvento = isset($row['NUMERO_EVENTO']) ? trim($row['NUMERO_EVENTO']) : '';
+        return $idMostrar.'|'.$numeroEvento;
+    }
 
-return $idMostrar.'|'.$numeroEvento;
+    // ── Verificar en 02XML (Pago a Proveedores) ──
+    $query2 = mysqli_query($conn, "SELECT 02XML.id, 02XML.ultimo_id, 02SUBETUFACTURA.NUMERO_CONSECUTIVO_PROVEE, 02SUBETUFACTURA.NUMERO_EVENTO
+        FROM 02XML 
+        LEFT JOIN 02SUBETUFACTURA ON 02XML.ultimo_id = 02SUBETUFACTURA.id
+        WHERE 02XML.UUID='".$uuid."'
+        ORDER BY 02XML.id DESC LIMIT 1");
+    $row2 = mysqli_fetch_array($query2, MYSQLI_ASSOC);
+    if($row2['id']){
+        $numero = ($row2['NUMERO_CONSECUTIVO_PROVEE'] != '') ? $row2['NUMERO_CONSECUTIVO_PROVEE'] : $row2['id'];
+        $numeroEvento2 = isset($row2['NUMERO_EVENTO']) ? trim($row2['NUMERO_EVENTO']) : '';
+        return '2^^'.$numero.'|'.$numeroEvento2;
+    }
+
+    return 'S';
 }
 
 

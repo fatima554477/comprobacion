@@ -1,7 +1,6 @@
 <?php
 /*
 
- * Programer: Fatima Arellano
  * Propietario: EPC
  * fecha sandor;
  * fecha fatima:23/03/2026
@@ -80,7 +79,7 @@
         <h4 class="modal-title">Confirmación</h4>
       </div>
       <div class="modal-body" id="personal_detalles3">
-        ¿ESTÁS SEGURO DE BORRAR ESTE REGISTRO?
+        ¿ESTÁS SEGURO DE BORRAR ESTE ARCHIVO?
       </div>
       <div class="modal-footer">
         <button id="btnYes" class="btn confirm">SI BORRAR</button>
@@ -129,6 +128,7 @@
 
 
 var fileobj;
+var _uploadEnProceso = {};
 
 
 function normalizarTextoEmpresaVO(texto) {
@@ -151,6 +151,15 @@ function file_explorer(name) {
 
 function ajax_file_upload1(file_obj, nombre) {
   if (!file_obj) return;
+  var esFacturaPrincipal = (nombre === 'ADJUNTAR_FACTURA_XML' || nombre === 'ADJUNTAR_FACTURA_PDF');
+
+  if (esFacturaPrincipal && _uploadEnProceso[nombre]) {
+    return;
+  }
+
+  if (esFacturaPrincipal) {
+    _uploadEnProceso[nombre] = true;
+  }
 
   var form_data = new FormData();
   form_data.append(nombre, file_obj);
@@ -168,18 +177,33 @@ function ajax_file_upload1(file_obj, nombre) {
     success: function (response) {
       var resp = $.trim(response);
 
-   if (resp === '3' || resp.indexOf('3|') === 0) {
+if (resp === '3' || resp.indexOf('3|') === 0) {
         var partesDuplicado = resp.split('|');
         var idDuplicado = partesDuplicado.length > 1 ? partesDuplicado[1] : '';
         var numeroEventoDuplicado = partesDuplicado.length > 2 ? partesDuplicado[2] : '';
-        var mensajeDuplicado = 'UUID PREVIAMENTE CARGADO ';
-        if (idDuplicado !== '') {
-          mensajeDuplicado += 'CON EL ID:  ' + idDuplicado + '.';
+
+        // Detectar si viene de 02XML (Pago a Proveedores)
+        var esPagoProveedores = idDuplicado.indexOf('2^^') === 0;
+        if (esPagoProveedores) {
+          idDuplicado = idDuplicado.replace('2^^', '');
+          var mensajeDuplicado = '⚠️ UUID YA REGISTRADO EN PAGO A PROVEEDORES';
+          if (idDuplicado !== '') {
+            mensajeDuplicado += ' — Solicitud: <strong>' + idDuplicado + '</strong>';
+          }
+          if (numeroEventoDuplicado !== '') {
+            mensajeDuplicado += ', Evento: <strong>' + numeroEventoDuplicado + '</strong>';
+          }
+          $('#1' + nombre).html('<p style="color:#9C2007;font-weight:600;">' + mensajeDuplicado + '</p>');
+        } else {
+          var mensajeDuplicado = 'UUID PREVIAMENTE CARGADO ';
+          if (idDuplicado !== '') {
+            mensajeDuplicado += 'CON EL ID:  ' + idDuplicado + '.';
+          }
+          if (numeroEventoDuplicado !== '') {
+            mensajeDuplicado += 'Y EN EL NÚMERO DE EVENTO: ' + numeroEventoDuplicado + '.';
+          }
+          $('#1' + nombre).html('<p style="color:red;"><strong>' + mensajeDuplicado + '</strong></p>');
         }
-        if (numeroEventoDuplicado !== '') {
-          mensajeDuplicado += 'Y EN EL NÚMERO DE EVENTO: ' + numeroEventoDuplicado + '.';
-        }
-        $('#1' + nombre).html('<p style="color:red;"><strong>' + mensajeDuplicado + '</strong></p>');
         $('#' + nombre).val('');
       } else if (resp === '4') {
         $('#1' + nombre).html('<p style="color:red;">Ya existe un archivo adjunto. Primero bórralo para subir uno nuevo.</p>');
@@ -211,12 +235,16 @@ function ajax_file_upload1(file_obj, nombre) {
         }
 
         recargarElemento('#2' + nombre);
-        recargarElemento('#resettabla');
+     recargarElemento('#resettabla');
+      }
+    },
+    complete: function () {
+      if (esFacturaPrincipal) {
+        _uploadEnProceso[nombre] = false;
       }
     }
   });
 }
-
 
 var _recargarXHR = {};
 
@@ -433,8 +461,16 @@ $(document).ready(function () {
 
 
 
+  /* ---------------------------------------------------
+     BORRAR ARCHIVOS ADJUNTOS (view_dataSBborrar2)
+     Corregido: guarda referencia a .fila-archivo ANTES
+     de abrir el modal, y en success elimina la fila del DOM
+  --------------------------------------------------- */
   $(document).on('click', '.view_dataSBborrar2', function () {
-    var borra_id_sb = $(this).attr('id');
+    var $boton = $(this);
+    var borra_id_sb = $boton.attr('id');
+    var $filaArchivo = $boton.closest('.fila-archivo');
+
     $('#dataModal3').modal('show');
 
     $('#btnYes').off('click').on('click', function () {
@@ -442,14 +478,29 @@ $(document).ready(function () {
         url: 'comprobaciones/controladorPP.php',
         method: 'POST',
         data: { borra_id_sb: borra_id_sb, borrasbdoc: 'borrasbdoc' },
-        beforeSend: function () { $('#mensajepagoproveedores').html('cargando...'); },
+        beforeSend: function () {
+          if ($filaArchivo.length) {
+            $filaArchivo.css('opacity', '0.5');
+          }
+          $('#mensajepagoproveedores').html('cargando...');
+        },
         success: function (data) {
           $('#dataModal3').modal('hide');
-          $('#mensajepagoproveedores').html("<span id='ACTUALIZADO'>" + data + "</span>");
-          recargarElemento('#' + borra_id_sb);
-          recargarElemento('#A' + borra_id_sb);
-		  limpiarFormularioPago();
+          $('#mensajepagoproveedores').html("<span style='color:green;font-weight:bold;'>Elemento borrado</span>");
 
+          // Eliminar la fila del archivo del DOM (Visualizar + Borrar + fecha)
+          if ($filaArchivo.length) {
+            $filaArchivo.fadeOut(300, function () { $(this).remove(); });
+          }
+
+          limpiarFormularioPago();
+        },
+        error: function () {
+          if ($filaArchivo.length) {
+            $filaArchivo.css('opacity', '1');
+          }
+          $('#dataModal3').modal('hide');
+          $('#mensajepagoproveedores').html("<span style='color:red;font-weight:bold;'>Error al borrar el archivo</span>");
         }
       });
     });
@@ -499,30 +550,7 @@ $(document).ready(function () {
 
 
 
-  /* ---------------------------------------------------
-     BORRAR DOCUMENTO (SBborrar2) — comportamiento original
-  --------------------------------------------------- */
-  $(document).on('click', '.view_dataSBborrar2', function () {
-    var borra_id_sb = $(this).attr('id');
-    $('#dataModal3').modal('show');
 
-    $('#btnYes').off('click').on('click', function () {
-      $.ajax({
-        url: 'comprobaciones/controladorPP.php',
-        method: 'POST',
-        data: { borra_id_sb: borra_id_sb, borrasbdoc: 'borrasbdoc' },
-        beforeSend: function () { $('#mensajepagoproveedores').html('cargando...'); },
-        success: function (data) {
-          $('#dataModal3').modal('hide');
-          $('#mensajepagoproveedores').html('<span id="ACTUALIZADO">' + data + '</span>');
-          // Recarga solo la fila afectada y su par (comportamiento original)
-          $('#' + borra_id_sb).load(location.href + ' #' + borra_id_sb);
-          $('#A' + borra_id_sb).load(location.href + ' #A' + borra_id_sb);
-		  location.reload();
-        }
-      });
-    });
-  });
 
 
   /* ---------------------------------------------------
