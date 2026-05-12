@@ -483,6 +483,7 @@ function load(page){
 	var TuaTotalCargos = getVal("TuaTotalCargos");
 	var Descuento = getVal("Descuento");
 	var propina = getVal("propina");
+	var PorfaltaDeFactura = getVal("PorfaltaDeFactura");
 	var FECHA_A_DEPOSITAR_DESDE = getVal("FECHA_A_DEPOSITAR_DESDE");
 	var FECHA_A_DEPOSITAR_HASTA = getVal("FECHA_A_DEPOSITAR_HASTA");
 	var per_page = getVal("per_page");
@@ -498,6 +499,7 @@ function load(page){
 		'MONTO_FACTURA': MONTO_FACTURA, 'MONTO_PROPINA': MONTO_PROPINA,
 		'MONTO_DEPOSITAR': MONTO_DEPOSITAR, 'TIPO_DE_MONEDA': TIPO_DE_MONEDA,
 		'PFORMADE_PAGO': PFORMADE_PAGO,
+		'PorfaltaDeFactura': PorfaltaDeFactura,
 		'FECHA_A_DEPOSITAR_DESDE': FECHA_A_DEPOSITAR_DESDE,
 		'FECHA_A_DEPOSITAR_HASTA': FECHA_A_DEPOSITAR_HASTA,
 		'STATUS_DE_PAGO': STATUS_DE_PAGO, 'BANCO_ORIGEN': BANCO_ORIGEN,

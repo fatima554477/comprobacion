@@ -208,6 +208,8 @@ if($search['TIPO_DE_MONEDA']!=""){
 $sWhere2.="  $tables.TIPO_DE_MONEDA LIKE '%".$search['TIPO_DE_MONEDA']."%' AND ";}
 if($search['PFORMADE_PAGO']!=""){
 $sWhere2.="  $tables.PFORMADE_PAGO LIKE '%".$search['PFORMADE_PAGO']."%' AND ";}
+if($search['PorfaltaDeFactura']!=""){
+$sWhere2.="  $tables.PorfaltaDeFactura LIKE '%".$search['PorfaltaDeFactura']."%' AND ";}
 
 
 if($search['FECHA_A_DEPOSITAR_DESDE']!="" && $search['FECHA_A_DEPOSITAR_HASTA']!=""){
