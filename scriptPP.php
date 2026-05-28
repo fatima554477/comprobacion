@@ -8,7 +8,7 @@
  *        integradas en ajax_file_upload1
  */
 ?>
- 
+ dataModal3
 <!-- Modal: Detalles pequeño (14) -->
 <div id="dataModal14" class="modal fade">
   <div class="modal-dialog" style="width:80% !important; max-width:100% !important;">
