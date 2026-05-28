@@ -233,26 +233,71 @@ $variablequery = mysqli_query($conn,$variable);
 
 public function solocargartemp($archivo)
 {
-    $nombre_carpeta = __ROOT2__.'/includes/archivos';
+    $nombre_carpeta = __ROOT2__ . '/includes/archivos';
+
+    if (!isset($_FILES[$archivo]) || $_FILES[$archivo]['error'] !== UPLOAD_ERR_OK) {
+        return "ERROR_SUBIDA";
+    }
+
+    if ($_FILES[$archivo]['size'] === 0) {
+        return "VACIO";
+    }
+
     $nombretemp    = $_FILES[$archivo]["tmp_name"];
     $nombrearchivo = basename($_FILES[$archivo]["name"]);
-    $extension     = explode('.', $nombrearchivo);
-    $cuenta        = count($extension) - 1;
-    $ext           = strtolower($extension[$cuenta]);
+
+    // Corregir nombre original
+    $nombrearchivo = urldecode($nombrearchivo);
+
+    if (function_exists('mb_check_encoding') && !mb_check_encoding($nombrearchivo, 'UTF-8')) {
+        $nombrearchivo = mb_convert_encoding($nombrearchivo, 'UTF-8', 'ISO-8859-1');
+    }
+
+    if (function_exists('iconv')) {
+        $nombrearchivo = iconv('UTF-8', 'UTF-8//IGNORE', $nombrearchivo);
+    }
+
+    $extension = explode('.', $nombrearchivo);
+    $cuenta    = count($extension) - 1;
+    $ext       = strtolower($extension[$cuenta]);
+
+    if ($cuenta === 0 || trim($ext) === '') {
+        return "SIN_EXTENSION";
+    }
 
     $extensionesPermitidas = array('pdf','gif','jpeg','jpg','png','mp4','docx','doc','xml');
-    if(!in_array($ext, $extensionesPermitidas)){
+
+    if (!in_array($ext, $extensionesPermitidas)) {
         return "2";
     }
 
-    // ✅ Nombre único para evitar sobreescribir archivos de otros registros
-    $nombrebase  = pathinfo($nombrearchivo, PATHINFO_FILENAME);
+    $nombrebase = pathinfo($nombrearchivo, PATHINFO_FILENAME);
+
+    $nombrebase = preg_replace('/[^a-zA-Z0-9_\-áéíóúÁÉÍÓÚñÑüÜ]/u', '_', $nombrebase);
+    $nombrebase = preg_replace('/_+/', '_', $nombrebase);
+    $nombrebase = trim($nombrebase, '_');
+
+    if (function_exists('mb_strlen')) {
+        if (mb_strlen($nombrebase, 'UTF-8') > 60) {
+            $nombrebase = mb_substr($nombrebase, 0, 60, 'UTF-8');
+        }
+    } else {
+        if (strlen($nombrebase) > 60) {
+            $nombrebase = substr($nombrebase, 0, 60);
+        }
+    }
+
+    if ($nombrebase === '') {
+        $nombrebase = 'archivo';
+    }
+
     $nuevonombre = $nombrebase . '_' . uniqid() . '.' . $ext;
 
-    if(move_uploaded_file($nombretemp, $nombre_carpeta.'/'.$nuevonombre)){
-        chmod($nombre_carpeta.'/'.$nuevonombre, 0755);
+    if (move_uploaded_file($nombretemp, $nombre_carpeta . '/' . $nuevonombre)) {
+        chmod($nombre_carpeta . '/' . $nuevonombre, 0755);
         return trim($nuevonombre);
     }
+
     return "1";
 }
 

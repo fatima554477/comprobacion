@@ -24,11 +24,29 @@ if($identioficador != '')
 $queryVISTAPREV = $pagoproveedores->Listado_pagoproveedor2($identioficador);
 
 ?>
-<div id="mensaje"></div>
+
 <div id="actualizatabla">
 <?php
    while($row = mysqli_fetch_array($queryVISTAPREV))
     {
+		   $nombreEjecutivoTarjeta = '';
+    if(!empty($row['EJECUTIVOTARJETA'])) {
+        $queryEjec = $conexion->colaborador_generico_bueno();
+        while($rowEjec = mysqli_fetch_array($queryEjec)) {
+            $idRelacion = isset($rowEjec['idRelacion']) ? trim($rowEjec['idRelacion']) : '';
+            if($idRelacion == trim($row['EJECUTIVOTARJETA'])) {
+                $nombreEjecutivoTarjeta = trim(
+                    $rowEjec['NOMBRE_1'].' '.
+                    $rowEjec['NOMBRE_2'].' '.
+                    $rowEjec['APELLIDO_PATERNO'].' '.
+                    $rowEjec['APELLIDO_MATERNO']
+                );
+                break; // ✅ Encontrado, salir del loop
+            }
+        }
+    }
+		
+		
 		$row2xml = $pagoproveedores->busca_07XML($row['id']);
 $SOLICITADO = "";$APROBADO = "";$PAGADO = "";$PAGADO = "";
     if($row['STATUS_DE_PAGO']=="SOLICITADO"){$SOLICITADO = "selected";}
@@ -37,7 +55,7 @@ elseif($row['STATUS_DE_PAGO']=="PAGADO"){$PAGADO = "selected";}
 elseif($row['STATUS_DE_PAGO']=="RECHAZADO"){$RECHAZADO = "selected";}
 
 $STATUS_DE_PAGO = '<select required="" name="STATUS_DE_PAGO"> 
-<option selected="">SELECCIONA UNA OPCION</option>
+
 <option style="background:#d9f9fa" value="SOLICITADO" '.$SOLICITADO.'>SOLICITADO</option>
 <option style="background:#e1f5de" value="APROBADO" '.$APROBADO.'>APROBADO</option>
 <option style="background:#f5deee" value="PAGADO" '.$PAGADO.'>PAGADO</option>
@@ -59,7 +77,7 @@ $STATUS_DE_PAGO = '<select required="" name="STATUS_DE_PAGO">
 		}
         
         
-        if($rowDOCTOS["ADJUNTAR_FACTURA_XML"]!=""){$ADJUNTAR_FACTURA_XML .=  "<a target='_blank' href='includes/archivos/".$rowDOCTOS["ADJUNTAR_FACTURA_XML"]."'>Visualizar!</a>"."  <span > ".$rowDOCTOS['fechaingreso']."</span>".'<br/>'; 
+        if($rowDOCTOS["ADJUNTAR_FACTURA_XML"]!=""){$ADJUNTAR_FACTURA_XML .=  "<a target='_blank' href='includes/archivos/".$rowDOCTOS["ADJUNTAR_FACTURA_XML"]."'>Visualizar!</a>"." <span id='".$rowDOCTOS['id']."' class='view_dataSBborrar2' style='cursor:pointer;color:blue;'>Borrar!</span>  <span > ".$rowDOCTOS['fechaingreso']."</span>".'<br/>'; 
 		}	else{
 			
 			//$ADJUNTAR_FACTURA_XML = "";
@@ -166,19 +184,56 @@ $STATUS_DE_PAGO = '<select required="" name="STATUS_DE_PAGO">
 
 ?>
 </div>
+
 <?php
+// Construye el listado de ejecutivos para mostrar nombre y apellidos en lugar del ID
+$ejecutivoTarjetaSelect = '<select class="form-select" id="EJECUTIVOTARJETA" name="EJECUTIVOTARJETA" required>';
+$ejecutivoTarjetaSelect .= '<option value="">SELECCIONA UNA OPCIÓN</option>';
+
+$ejecutivoActual = isset($row['EJECUTIVOTARJETA']) ? trim($row['EJECUTIVOTARJETA']) : '';
+$ejecutivoEncontrado = false;
+
+$queryper = $conexion->colaborador_generico_bueno();
+while($rowEjecutivo = mysqli_fetch_array($queryper)) {
+    $idRelacion = isset($rowEjecutivo['idRelacion']) ? trim($rowEjecutivo['idRelacion']) : '';
+    $nombreCompleto = trim(
+        $rowEjecutivo['NOMBRE_1'].' '.
+        $rowEjecutivo['NOMBRE_2'].' '.
+        $rowEjecutivo['APELLIDO_PATERNO'].' '.
+        $rowEjecutivo['APELLIDO_MATERNO']
+    );
+
+    $idSanitizado = htmlspecialchars($idRelacion, ENT_QUOTES, 'UTF-8');
+    $nombreSanitizado = htmlspecialchars($nombreCompleto, ENT_QUOTES, 'UTF-8');
+
+    $selected = '';
+    if($ejecutivoActual === $idRelacion){
+        $selected = ' selected';
+        $ejecutivoEncontrado = true;
+    }
+
+    $ejecutivoTarjetaSelect .= '<option value="'.$idSanitizado.'"'.$selected.'>'.$nombreSanitizado.'</option>';
+}
+
+// Si el ID guardado no está en la lista, lo mostramos como opción seleccionada para mantener el dato editable
+if(!$ejecutivoEncontrado && $ejecutivoActual !== ''){
+    $ejecutivoTarjetaSelect .= '<option value="'.htmlspecialchars($ejecutivoActual, ENT_QUOTES, 'UTF-8').'" selected>'.htmlspecialchars($ejecutivoActual, ENT_QUOTES, 'UTF-8').' - SIN INFORMACIÓN</option>';
+}
+
+$ejecutivoTarjetaSelect .= '</select>';
 
 
  $output .= '<div id="respuestaser"></div>
- <form  id="ListadoPAGOPROVEEform"> 
-      <div class="table-responsive">  
+ <form  id="ListadoPAGOPROVEEform">
+      <div class="table-responsive">
            <table class="table table-bordered">';
- 
+
 $campos_xml = '';
 
 if($row2xml["Version"]=='no' or $row2xml["Version"]==''){
 
 $campos_xml = '
+
 
 <!--aqui empieza la lectura BD a XML-->
 <!--aqui empieza la lectura BD a XML-->
@@ -388,7 +443,15 @@ if($row["FECHA_DE_LLENADO"]==''){
 <td width="30%" style="font-weight:bold;" ><label>NOMBRE DEL EVENTO</label></td>
 <td width="70%"><input type="text" name="NOMBRE_EVENTO" value="'.$row["NOMBRE_EVENTO"].'"></td>
 </tr> 
+<tr>
+<td width="30%" style="font-weight:bold;" ><label>FECHA INICIO EVENTO</label></td>
+<td width="70%"><input type="date" name="FECHA_INICIO_EVENTO" value="'.$row["FECHA_INICIO_EVENTO"].'"></td>
+</tr> 
 
+<tr>
+<td width="30%" style="font-weight:bold;" ><label>FECHA FINAL EVENTO</label></td>
+<td width="70%"><input type="date" name="FECHA_FINAL_EVENTO" value="'.$row["FECHA_FINAL_EVENTO"].'"></td>
+</tr> 
 
 <tr>
 <td width="30%" style="font-weight:bold;" ><label>MOTIVO DEL GASTO</label></td>
@@ -417,12 +480,12 @@ if($row["FECHA_DE_LLENADO"]==''){
 
 <tr style="background: #c3f5d9">
 <td width="30%" style="font-weight:bold;" ><label>IMPUESTOS RETENIDOS  IVA:</label></td>
-<td width="70%"><input type="text" name="TImpuestosRetenidosIVA"  value="'.$row["TImpuestosRetenidosIVA"].'"></td>
+<td width="70%"><input type="text" name="TImpuestosRetenidosIVA" id="montoRetenidoIVA" value="'.$row["TImpuestosRetenidosIVA"].'"></td>
 </tr> 
 
 <tr style="background: #c3f5d9">
 <td width="30%" style="font-weight:bold;" ><label>IMPUESTOS RETENIDOS  ISR:</label></td>
-<td width="70%"><input type="text" name="TImpuestosRetenidosISR"  value="'.$row["TImpuestosRetenidosISR"].'"></td>
+<td width="70%"><input type="text" name="TImpuestosRetenidosISR" id="montoRetenidoISR"  value="'.$row["TImpuestosRetenidosISR"].'"></td>
 </tr> 
 
 
@@ -442,7 +505,7 @@ if($row["FECHA_DE_LLENADO"]==''){
 
 <tr style="background: #c3f5d9">
 <td width="30%" style="font-weight:bold;" ><label>DESCUENTO:</label></td>
-<td width="70%"><input type="text" name="descuentos"  value="'.$row["descuentos"].'"></td>
+<td width="70%"><input type="text" name="descuentos" id="montoDescuentos" value="'.$row["descuentos"].'"></td>
 </tr> 
 
 
@@ -527,7 +590,7 @@ if($row["FECHA_DE_LLENADO"]==''){
 </tr> 
 <tr   style="background: #f1a766">
 
-<td width="30%" style="font-weight:bold;" ><label>FECHA EFECTIVA DE PAGO:</label></td>
+<td width="30%" style="font-weight:bold;" ><label>FECHA DE CARGO A TCD</label></td>
 <td width="70%"><input type="date" name="FECHA_A_DEPOSITAR" value="'.$row["FECHA_A_DEPOSITAR"].'"></td>
 </tr> 
 
@@ -587,9 +650,19 @@ if($row["FECHA_DE_LLENADO"]==''){
 <td width="30%" style="font-weight:bold;" ><label>SUB CLASIFICACIÓN GENERAL</label></td>
 <td width="70%"><input type="text" name="SUB_GENERAL" value="'.$row["SUB_GENERAL"].'"></td>
 </tr>
+
 <tr>
-<td width="30%" style="font-weight:bold;" ><label>COMPLEMENTOS DE PAGO  (FORMATO PDF)</label></td>
-<td width="70%">	<div id="drop_file_zone" ondrop="upload_file2(event,\'COMPLEMENTOS_PAGO_PDF\')" ondragover="return false" style="width:300px;">
+<td width="30%" style="font-weight:bold;background:#A3ED8C" ><label>COMPLEMENTO DE PAGO &nbsp;<a style="color:red;font:12px">(FORMATO  XML)</a></label></td>
+<td width="70%" style="font-weight:bold;background:#A3ED8C" >	<div id="drop_file_zone" ondrop="upload_file2(event,\'COMPLEMENTOS_PAGO_XML\')" ondragover="return false" style="width:300px;">
+<p>Suelta aquí o busca tu archivo</p>
+<p><input class="form-control form-control-sm" id="COMPLEMENTOS_PAGO_XML" type="text" onkeydown="return false" onclick="file_explorer2(\'COMPLEMENTOS_PAGO_XML\');" style="width:250px;" VALUE="'.$row["COMPLEMENTOS_PAGO_XML"] .' " required /></p>
+<input type="file" name="COMPLEMENTOS_PAGO_XML" id="nono"/>
+<div id="3COMPLEMENTOS_PAGO_XML">
+'.$COMPLEMENTOS_PAGO_XML.'</td>
+</tr> 
+<tr>
+<td width="30%" style="font-weight:bold;background:#A3ED8C"  ><label>COMPLEMENTO DE PAGO  (FORMATO PDF)</label></td>
+<td width="70%"  style="font-weight:bold;background:#A3ED8C" >	<div id="drop_file_zone" ondrop="upload_file2(event,\'COMPLEMENTOS_PAGO_PDF\')" ondragover="return false" style="width:300px;">
 <p>Suelta aquí o busca tu archivo</p>
 <p><input class="form-control form-control-sm" id="COMPLEMENTOS_PAGO_PDF" type="text" onkeydown="return false" onclick="file_explorer2(\'COMPLEMENTOS_PAGO_PDF\');" style="width:250px;" VALUE="'.$row["COMPLEMENTOS_PAGO_PDF"] .' " required /></p>
 <input type="file" name="COMPLEMENTOS_PAGO_PDF" id="nono"/>
@@ -597,15 +670,7 @@ if($row["FECHA_DE_LLENADO"]==''){
 '.$COMPLEMENTOS_PAGO_PDF.'</td>
 </tr> 
 
-<tr>
-<td width="30%" style="font-weight:bold;" ><label>COMPLEMENTOS DE PAGO (FORMATO XML)</label></td>
-<td width="70%">	<div id="drop_file_zone" ondrop="upload_file2(event,\'COMPLEMENTOS_PAGO_XML\')" ondragover="return false" style="width:300px;">
-<p>Suelta aquí o busca tu archivo</p>
-<p><input class="form-control form-control-sm" id="COMPLEMENTOS_PAGO_XML" type="text" onkeydown="return false" onclick="file_explorer2(\'COMPLEMENTOS_PAGO_XML\');" style="width:250px;" VALUE="'.$row["COMPLEMENTOS_PAGO_XML"] .' " required /></p>
-<input type="file" name="COMPLEMENTOS_PAGO_XML" id="nono"/>
-<div id="3COMPLEMENTOS_PAGO_XML">
-'.$COMPLEMENTOS_PAGO_XML.'</td>
-</tr> 
+
 
 <tr>
 <td width="30%" style="font-weight:bold;" ><label>ADJUNTAR CANCELACIONES (FORMATO PDF)</label></td>
@@ -686,15 +751,24 @@ if($row["FECHA_DE_LLENADO"]==''){
 <td width="30%" style="font-weight:bold;" ><label>PÓLIZA NÚMERO</label></td>
 <td width="70%"><input type="text" name="POLIZA_NUMERO" value="'.$row["POLIZA_NUMERO"].'"></td>
 </tr>
+<tr>
+<td width="30%" style="font-weight:bold;" ><label>NOMBRE DEL EJECUTIVO TITULAR DE LA TARJETA</label></td>
+<td width="70%">'.$ejecutivoTarjetaSelect.'</td>
+</tr>
+
 
 <tr>
 <td width="30%" style="font-weight:bold;" ><label>BANCO</label></td>
 <td width="70%"><input type="text" name="BANCO_ORIGEN" value="'.$row["BANCO_ORIGEN"].'"></td>
 </tr>
-<input type="hidden" name="EJECUTIVOTARJETA" value="'.$row["EJECUTIVOTARJETA"].'">
 <tr>
 <td width="30%" style="font-weight:bold;" ><label>NOMBRE DEL EJECUTIVO QUE REALIZÓ LA COMPRA</label></td>
 <td width="70%"><input type="text" name="NOMBRE_DEL_EJECUTIVO" value="'.$row["NOMBRE_DEL_EJECUTIVO"].'"></td>
+</tr>
+
+<tr>
+<td width="30%" style="font-weight:bold;" ><label>NOMBRE DEL EJECUTIVO QUE INGRESO ESTA FACTURA</label></td>
+<td width="70%"><input type="text" name="NOMBRE_DEL_AYUDO" value="'.$row["NOMBRE_DEL_AYUDO"].'"></td>
 </tr>
 
 <tr>
@@ -734,7 +808,7 @@ if($row["FECHA_DE_LLENADO"]==''){
 
      ';
     }
-    $output .= '</table></div>
+    $output .= '</table><div id="mensaje"></div></div>
 
 	</form>';
     echo $output;
@@ -758,16 +832,19 @@ if($row["FECHA_DE_LLENADO"]==''){
 	    };
 	}
 	
-	// Función para calcular el total automáticamente
+// Función para calcular el total automáticamente
 function calcularTotal() {
     // Obtener valores
     const montoEvento = parseFloat(document.getElementById('montoTotalEvento').value) || 0;
     const montoAvion = parseFloat(document.getElementById('montoTotalAvion').value) || 0;
     const montopropina = parseFloat(document.getElementById('montoTotalpropina').value) || 0;
     const montohospedaje = parseFloat(document.getElementById('montoTotalhospedaje').value) || 0;
+    const montoRetenidoIVA = parseFloat(document.getElementById('montoRetenidoIVA').value) || 0;
+    const montoRetenidoISR = parseFloat(document.getElementById('montoRetenidoISR').value) || 0;
+    const montoDescuentos = parseFloat(document.getElementById('montoDescuentos').value) || 0;
     
     // Calcular suma
-    const total = montoEvento + montoAvion + montopropina + montohospedaje;
+    const total = montoEvento + montoAvion + montopropina + montohospedaje - montoRetenidoIVA - montoRetenidoISR - montoDescuentos;
     
     // Asignar resultado (con 2 decimales)
     document.getElementById('montoTotalEventoResultado').value = total.toFixed(2);
@@ -781,84 +858,150 @@ document.getElementById('montoTotalEvento').addEventListener('input', calcularTo
 document.getElementById('montoTotalAvion').addEventListener('input', calcularTotal);
 document.getElementById('montoTotalpropina').addEventListener('input', calcularTotal);
 document.getElementById('montoTotalhospedaje').addEventListener('input', calcularTotal);
+document.getElementById('montoRetenidoIVA').addEventListener('input', calcularTotal);
+document.getElementById('montoRetenidoISR').addEventListener('input', calcularTotal);
+document.getElementById('montoDescuentos').addEventListener('input', calcularTotal);
 
-	function ajax_file_upload2(file_obj,nombre) {
-	    if(file_obj != undefined) {
-	        var form_data = new FormData();                  
-	        form_data.append(nombre, file_obj);
-	        form_data.append("IPpagoprovee",  $("#IPpagoprovee").val());
-	        $.ajax({
-	            type: 'POST',
-                url:"comprobaciones/controladorPP.php",
-				  dataType: "html",
-	            contentType: false,
-	            processData: false,
-	            data: form_data,
- beforeSend: function() {
-$('#3'+nombre).html('<p style="color:green;">Cargando archivo!</p>');
-$('#respuestaser').html('<p style="color:green;">Actualizado!</p>');
-    },				
-	            success:function(response) {
+function ajax_file_upload2(file_obj, nombre) {
+    if (!file_obj) return;
 
-if($.trim(response) == 2 ){
+    var form_data = new FormData();
+    form_data.append(nombre, file_obj);
+    form_data.append("IPpagoprovee", $("#IPpagoprovee").val());
 
-$('#3'+nombre).html('<p style="color:red;">Error, archivo diferente a PDF, JPG o GIF.</p>');
-$('#'+nombre).val("");
-}
-else if($.trim(response) == 3 ){
-$('#3'+nombre).html('<p style="color:red;">UUID PREVIAMENTE CARGADO.</p>');
-//$('#'+nombre).val("");
-}
-else{
-$('#'+nombre).val(response);
-$('#3'+nombre).html('<a target="_blank" href="includes/archivos/'+$.trim(response)+'">Visualizar!</a>');
-$('#reseteaxml').remove(); 
-
-}
-$('#respuestaser').html('<p style="color:green;">'+response+'</p>');
-	            }
-	        });
-	    }
-	}
-	
-$(document).ready(function () {
-  $("#clickPAGOP").click(function () {
     $.ajax({
-      url: "comprobaciones/controladorPP.php",
-      method: "POST",
-      data: $("#ListadoPAGOPROVEEform").serialize(),
-      beforeSend: function () {
-        $("#mensaje").html("cargando");
-      },
-      success: function (data) {
-        if ($.trim(data) === "Ingresado" || $.trim(data) === "Actualizado") {
-          $("#dataModal5").modal("hide");
+        type: 'POST',
+        url: 'comprobaciones/controladorPP.php',
+        dataType: 'html',
+        contentType: false,
+        processData: false,
+        data: form_data,
+        beforeSend: function() {
+            $('#3' + nombre).html('<p style="color:green;"><span class="spinner-border spinner-border-sm"></span>&nbsp;Cargando archivo...</p>');
+            $('#respuestaser').html('<p style="color:green;">Actualizando...</p>');
+        },
+        success: function(response) {
+            var resp = $.trim(response);
 
-          // 1) Resuelve las URLs de los scripts
-          var urlCOM = typeof loadCOM === "function" ? loadCOM(1) : "js/loadCOM.js";
-          var url7   = typeof load7   === "function" ? load7(1)   : "js/load7.js";
+            // ── Archivo vacío (0 bytes) ─────────────────────────────────
+            if (resp.indexOf('VACIO^^') === 0) {
+                $('#3' + nombre).html(
+                    '<p style="color:red;font-weight:600;">⚠️ EL ARCHIVO ESTÁ VACÍO (0 KB). ' +
+                    'Verifica que el archivo tenga contenido antes de subirlo.</p>'
+                );
+                $('#' + nombre).val('');
 
-          // 2) Cárgalos en SECUENCIA para garantizar orden
-          $.ajax({ url: urlCOM, dataType: "script", cache: true })
-            .then(function () {
-              return $.ajax({ url: url7, dataType: "script", cache: true });
-            })
-            .then(function () {
-              $("#mensajepagoproveedores").html("<span id='ACTUALIZADO'>" + data + "</span>");
-            })
-            .fail(function (jqXHR, textStatus, errorThrown) {
-              $("#mensajepagoproveedores").html(
-                "Error al cargar scripts: " + (errorThrown || textStatus)
-              );
-            });
+            // ── Sin extensión ───────────────────────────────────────────
+            } else if (resp.indexOf('SIN_EXTENSION^^') === 0) {
+                $('#3' + nombre).html(
+                    '<p style="color:red;font-weight:600;">⚠️ EL ARCHIVO NO TIENE EXTENSIÓN RECONOCIDA. ' +
+                    'Asegúrate de que el nombre termine en .xml, .pdf, .jpg, etc.</p>'
+                );
+                $('#' + nombre).val('');
 
-        } else {
-          $("#mensajepagoproveedores").html(data);
+            // ── Error de subida al servidor ─────────────────────────────
+            } else if (resp.indexOf('ERROR_SUBIDA^^') === 0) {
+                $('#3' + nombre).html(
+                    '<p style="color:red;font-weight:600;">⚠️ ERROR AL RECIBIR EL ARCHIVO EN EL SERVIDOR. ' +
+                    'Puede que sea demasiado grande o que la conexión se interrumpió. Intenta de nuevo.</p>'
+                );
+                $('#' + nombre).val('');
+
+            // ── Error al guardar en disco ───────────────────────────────
+            } else if (resp === '1') {
+                $('#3' + nombre).html(
+                    '<p style="color:red;font-weight:600;">⚠️ ERROR AL GUARDAR EL ARCHIVO EN EL SERVIDOR. ' +
+                    'Intenta de nuevo o contacta a soporte técnico.</p>'
+                );
+                $('#' + nombre).val('');
+
+            // ── Formato no permitido ────────────────────────────────────
+            } else if (resp === '2') {
+                var exts = (nombre === 'ADJUNTAR_FACTURA_XML') ? 'XML' :
+                           (nombre === 'ADJUNTAR_FACTURA_PDF') ? 'PDF' :
+                           'PDF, JPG, PNG, DOCX, XML u otro formato de documento';
+                $('#3' + nombre).html(
+                    '<p style="color:red;">⚠️ FORMATO DE ARCHIVO NO PERMITIDO. ' +
+                    'Este campo acepta únicamente: <strong>' + exts + '</strong>.</p>'
+                );
+                $('#' + nombre).val('');
+
+            // ── UUID duplicado en 07XML o 02XML ─────────────────────────
+            } else if (resp === '3' || resp.indexOf('3|') === 0) {
+                var partesDuplicado = resp.split('|');
+                var idDuplicado = partesDuplicado.length > 1 ? partesDuplicado[1] : '';
+                var numeroEventoDuplicado = partesDuplicado.length > 2 ? partesDuplicado[2] : '';
+
+                var esPagoProveedores = idDuplicado.indexOf('2^^') === 0;
+                if (esPagoProveedores) {
+                    idDuplicado = idDuplicado.replace('2^^', '');
+                    var mensajePago = '⚠️ UUID YA REGISTRADO EN PAGO A PROVEEDORES';
+                    if (idDuplicado !== '') { mensajePago += ' — Solicitud: <strong>' + idDuplicado + '</strong>'; }
+                    if (numeroEventoDuplicado !== '') { mensajePago += ', Evento: <strong>' + numeroEventoDuplicado + '</strong>'; }
+                    $('#3' + nombre).html('<p style="color:#9C2007;font-weight:600;">' + mensajePago + '</p>');
+                } else {
+                    var mensajeDup = '⚠️ UUID PREVIAMENTE CARGADO';
+                    if (idDuplicado !== '') { mensajeDup += ' CON EL ID: ' + idDuplicado + '.'; }
+                    if (numeroEventoDuplicado !== '') { mensajeDup += ' EN EL NÚMERO DE EVENTO: ' + numeroEventoDuplicado + '.'; }
+                    $('#3' + nombre).html('<p style="color:red;font-weight:600;">' + mensajeDup + '</p>');
+                }
+                $('#' + nombre).val('');
+
+            // ── Ya existe un adjunto ────────────────────────────────────
+            } else if (resp === '4') {
+                $('#3' + nombre).html(
+                    '<p style="color:red;">⚠️ Ya existe un archivo adjunto. Primero bórralo para subir uno nuevo.</p>'
+                );
+                $('#' + nombre).val('');
+
+            // ── Formato XML requerido ───────────────────────────────────
+            } else if (resp === 'El archivo debe estar en formato XML.') {
+                $('#3' + nombre).html('<p style="color:red;font-weight:600;">⚠️ ' + resp + '</p>');
+                $('#' + nombre).val('');
+
+            // ── Receptor no válido ──────────────────────────────────────
+            } else if (resp.indexOf('6^^') === 0) {
+                var partesReceptor = resp.split('^^');
+                var receptorOriginal = partesReceptor.length > 1 ? partesReceptor[1] : '';
+                var receptorNorm = (receptorOriginal || '').toString().trim().toUpperCase().replace(/\s+/g, ' ');
+                $('#3' + nombre).html(
+                    '<p style="color:red;font-weight:600;">⚠️ EL RECEPTOR DE LA FACTURA NO ES: EPC, INN, EVE520. ' +
+                    'RECEPTOR DETECTADO: <strong>' + receptorNorm + '</strong></p>'
+                );
+                $('#' + nombre).val('');
+
+            // ── Éxito ───────────────────────────────────────────────────
+            } else {
+                $('#' + nombre).val(response);
+                $('#3' + nombre).html('<p style="color:green;">✅ ¡Archivo cargado con éxito!</p>');
+                $('#respuestaser').html('<p style="color:green;">✅ ¡Actualizado!</p>');
+                $('#reseteaxml').remove();
+            }
         }
-        $("#mensaje").html(data);
-      }
     });
-  });
-});
+}
+	
+    $(document).ready(function(){
+		$("#clickPAGOP").click(function(){
+			$.ajax({
+				url:"comprobaciones/controladorPP.php",
+				method:"POST",  
+				data:$('#ListadoPAGOPROVEEform').serialize(),
+			beforeSend:function(){  
+				$('#mensaje').html('cargando'); 
+			}, 	
+			success:function(data){
+				if($.trim(data)=='Ingresado' || $.trim(data)=='Actualizado'){
+					$('#dataModal5').modal('hide');
+					$.getScript(loadCOM(1));
+					$("#mensajepagoproveedores").html("<span id='ACTUALIZADO' >"+data+"</span>");
+				}else{
+					$("#mensajepagoproveedores").html(data);
+				}
+				$("#mensaje").html(data);
+			}  
+			});
+		});
+	});
 		
 	</script>
