@@ -1078,30 +1078,13 @@ function ajax_file_upload2(file_obj, nombre) {
                 );
                 $('#' + nombre).val('');
 
-// ── Éxito ───────────────────────────────────────────────────
-} else {
-
-    var archivo = $.trim(response);
-
-    $('#' + nombre).val(archivo);
-
-    $('#3' + nombre).html(
-        '<div class="fila-archivo-temporal" id="fila_temp_' + nombre + '">' +
-
-            '<a target="_blank" href="includes/archivos/' + archivo + '" ' +
-            'style="color:green;font-weight:bold;">Visualizar!</a> ' +
-
-            '<span class="borrarArchivoTemporal" ' +
-            'data-campo="' + nombre + '" ' +
-            'data-archivo="' + archivo + '" ' +
-            'style="cursor:pointer;color:red;font-weight:bold;margin-left:10px;">Borrar!</span>' +
-
-        '</div>'
-    );
-
-    $('#respuestaser').html('<p style="color:green;">✅ ¡Archivo cargado con éxito!</p>');
-    $('#reseteaxml').remove();
-}
+            // ── Éxito ───────────────────────────────────────────────────
+            } else {
+                $('#' + nombre).val(response);
+                $('#3' + nombre).html('<p style="color:green;">✅ ¡Archivo cargado con éxito!</p>');
+                $('#respuestaser').html('<p style="color:green;">✅ ¡Actualizado!</p>');
+                $('#reseteaxml').remove();
+            }
         }
     });
 }

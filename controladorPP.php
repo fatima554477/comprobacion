@@ -154,23 +154,6 @@ if($action=='ciudad_valor'){
     $NUMERO_EVENTO = isset($_POST["NUMERO_EVENTO"])?$_POST["NUMERO_EVENTO"]:"";
     echo $resultado = $pagoproveedores->buscarciudad($NUMERO_EVENTO);
 }
-
-if (isset($_POST['borrar_archivo_temporal']) 
-    && $_POST['borrar_archivo_temporal'] == 'borrar_archivo_temporal') {
-
-    $archivo = isset($_POST['archivo_temporal'])
-        ? basename($_POST['archivo_temporal'])
-        : '';
-
-    $ruta = __ROOT2__ . '/includes/archivos/' . $archivo;
-
-    if ($archivo != '' && file_exists($ruta)) {
-        unlink($ruta);
-    }
-
-    echo 'BORRADO';
-    exit;
-}
  
 if($hiddenpagoproveedores == 'hiddenpagoproveedores' or $ENVIARPAGOprovee == 'ENVIARPAGOprovee'){            
 	
