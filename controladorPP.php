@@ -298,8 +298,16 @@ elseif($borra_datos_bancario1 == 'borra_datos_bancario1'){
 }
  
 elseif($borrasbdoc =='borrasbdoc'){
-    $borra_id_sb = isset($_POST["borra_id_sb"])?$_POST["borra_id_sb"]:"";   
-    echo $pagoproveedores->delete_subefacturadocto2($borra_id_sb);
+    $borra_id_sb = isset($_POST["borra_id_sb"])?$_POST["borra_id_sb"]:"";
+    $borra_archivo_sb = isset($_POST["borra_archivo_sb"])?$_POST["borra_archivo_sb"]:"";
+    $borra_campo_sb = isset($_POST["borra_campo_sb"])?$_POST["borra_campo_sb"]:"";
+
+    if($borra_id_sb != ''){
+        echo $pagoproveedores->delete_subefacturadocto2($borra_id_sb, __ROOT1__.'/includes/archivos/');
+    }else{
+        echo $pagoproveedores->delete_subefacturadocto2nombre($borra_archivo_sb, $borra_campo_sb, __ROOT1__.'/includes/archivos/');
+    }
+    exit;
 }
  
  

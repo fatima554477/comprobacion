@@ -1683,9 +1683,10 @@ $variablequery = "select id,".$ADJUNTAR_COTIZACION.",fechaingreso from 07COMPROB
 		}
 	}
 	
-  public function delete_subefacturadocto2($id){ $conn = $this->db();
+  public function delete_subefacturadocto2($id, $rutaArchivos = ''){ $conn = $this->db();
 
-    $query = "SELECT idTemporal, ADJUNTAR_FACTURA_XML FROM 07COMPROBACIONDOCT WHERE id = '".$id."' ";
+    $id = mysqli_real_escape_string($conn, (string)$id);
+    $query = "SELECT * FROM 07COMPROBACIONDOCT WHERE id = '".$id."' ";
     $resultado = mysqli_query($conn,$query);
     $row = mysqli_fetch_array($resultado, MYSQLI_ASSOC);
 
@@ -1694,21 +1695,97 @@ $variablequery = "select id,".$ADJUNTAR_COTIZACION.",fechaingreso from 07COMPROB
         mysqli_query($conn,$variablequery);
 
 
+     }
+
+    if($row && $rutaArchivos != ''){
+        $this->borrar_archivos_fila_docto($row, $rutaArchivos);
     }
 
     $variablequery = "delete from 07COMPROBACIONDOCT where id = '".$id."' ";
     return $arrayquery = mysqli_query($conn,$variablequery);
 
 }
+   public function delete_subefacturadocto2nombre($nombre, $campo, $rutaArchivos = ''){ $conn = $this->db();
+   if($campo === 'FOTO_ESTADO_PROVEE11'){
+       $campo = 'FOTO_ESTADO_PROVEE';
+   }
+   $camposPermitidos = $this->campos_adjuntos_docto();
+   if(!in_array($campo, $camposPermitidos, true)){
+       return false;
+   }
 
-   public function delete_subefactura2nombre($nombre){ $conn = $this->db(); 
+   $nombre = mysqli_real_escape_string($conn, basename((string)$nombre));
+   if($nombre == ''){
+       return false;
+   }
+
+   $query = "SELECT * FROM 07COMPROBACIONDOCT WHERE ".$campo." = '".$nombre."' ORDER BY id DESC LIMIT 1";
+   $resultado = mysqli_query($conn,$query);
+   $row = mysqli_fetch_array($resultado, MYSQLI_ASSOC);
+   if(!$row){
+       return false;
+   }
+
+   if($campo === 'ADJUNTAR_FACTURA_XML'){
+       $variablequeryXml = "DELETE FROM 07XML WHERE ultimo_id = '".$row['idTemporal']."' ";
+       mysqli_query($conn,$variablequeryXml);
+   }
+
+   if($rutaArchivos != ''){
+       $this->borrar_archivo_docto($nombre, $rutaArchivos);
+   }
+
+   $variablequery = "delete from 07COMPROBACIONDOCT where id = '".$row['id']."' ";
+   return mysqli_query($conn,$variablequery);
+
+}
+
+   public function delete_subefactura2nombre($nombre){ $conn = $this->db();
+   $nombre = mysqli_real_escape_string($conn, (string)$nombre);   
    $variablequery = "delete from 07COMPROBACIONDOCT where ADJUNTAR_FACTURA_XML = '".$nombre."' ";
    mysqli_query($conn,$variablequery); 
 
 }
 
 
+   private function campos_adjuntos_docto(){
+       return array(
+           'ADJUNTAR_FACTURA_PDF',
+           'ADJUNTAR_FACTURA_XML',
+           'ADJUNTAR_COTIZACION',
+           'CONPROBANTE_TRANSFERENCIA',
+           'FOTO_ESTADO_PROVEE',
+           'COMPLEMENTOS_PAGO_PDF',
+           'COMPLEMENTOS_PAGO_XML',
+           'CANCELACIONES_PDF',
+           'CANCELACIONES_XML',
+           'ADJUNTAR_FACTURA_DE_COMISION_PDF',
+           'ADJUNTAR_FACTURA_DE_COMISION_XML',
+           'ADJUNTAR_ARCHIVO_1',
+           'CALCULO_DE_COMISION',
+           'COMPROBANTE_DE_DEVOLUCION',
+           'NOTA_DE_CREDITO_COMPRA'
+       );
+   }
 
+   private function borrar_archivos_fila_docto($row, $rutaArchivos){
+       foreach($this->campos_adjuntos_docto() as $campo){
+           if(isset($row[$campo]) && trim((string)$row[$campo]) != ''){
+               $this->borrar_archivo_docto($row[$campo], $rutaArchivos);
+           }
+       }
+   }
+
+   private function borrar_archivo_docto($nombre, $rutaArchivos){
+       $archivo = basename((string)$nombre);
+       if($archivo == ''){
+           return;
+       }
+       $rutaCompleta = rtrim((string)$rutaArchivos, '/').'/'.$archivo;
+       if(file_exists($rutaCompleta)){
+           @unlink($rutaCompleta);
+       }
+   }
 
 
 
