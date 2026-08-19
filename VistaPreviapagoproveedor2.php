@@ -528,6 +528,8 @@ if($row["FECHA_DE_LLENADO"]==''){
 			
             <option style="background:#a3e4d7" value="MXN" '.($row["TIPO_DE_MONEDA"] == "MXN" ? "selected" : "").'>MXN (Peso mexicano) </option>
 			
+	<option style="background:#a3e4d7" value="COP" '.($row["TIPO_DE_MONEDA"] == "COP" ? "selected" : "").'>COP (Peso colombiano) </option>
+			
             <option style="background:#c9e8e8" value="USD" '.($row["TIPO_DE_MONEDA"] == "USD" ? "selected" : "").'>USD (Dolar) </option>			
 
              <option style="background:#e8f6f3" value="EUR" '.($row["TIPO_DE_MONEDA"] == "EUR" ? "selected" : "").'>EUR (Euro) </option>     
@@ -1080,8 +1082,17 @@ function ajax_file_upload2(file_obj, nombre) {
 
             // ── Éxito ───────────────────────────────────────────────────
             } else {
-                $('#' + nombre).val(response);
-                $('#3' + nombre).html('<p style="color:green;">✅ ¡Archivo cargado con éxito!</p>');
+              $('#' + nombre).val(resp);
+                var archivoSeguro = $('<div>').text(resp).html();
+                var archivoUrl = 'includes/archivos/' + encodeURIComponent(resp);
+                $('#3' + nombre).html(
+                    '<div class="fila-archivo fila-archivo-pendiente">' +
+                    '<a target="_blank" href="' + archivoUrl + '">Visualizar!</a> ' +
+                    '<span class="view_dataSBborrar2" data-archivo="' + archivoSeguro + '" data-campo="' + nombre + '" ' +
+                    'style="cursor:pointer;color:blue;">Borrar!</span> ' +
+                    '<span style="color:green;">✅ Archivo cargado pendiente de guardar</span>' +
+                    '</div>'
+                );
                 $('#respuestaser').html('<p style="color:green;">✅ ¡Actualizado!</p>');
                 $('#reseteaxml').remove();
             }
@@ -1090,6 +1101,49 @@ function ajax_file_upload2(file_obj, nombre) {
 }
 	
     $(document).ready(function(){
+		      $(document).on('click', '.view_dataSBborrar2', function () {
+            var $boton = $(this);
+            var borra_id_sb = $boton.attr('id') || '';
+            var borra_archivo_sb = $boton.data('archivo') || '';
+            var borra_campo_sb = $boton.data('campo') || '';
+            var $filaArchivo = $boton.closest('.fila-archivo');
+
+            if (confirm('¿ESTÁS SEGURO DE BORRAR ESTE ARCHIVO?')) {
+                $.ajax({
+                    url: 'comprobaciones/controladorPP.php',
+                    method: 'POST',
+                    data: {
+                        borra_id_sb: borra_id_sb,
+                        borra_archivo_sb: borra_archivo_sb,
+                        borra_campo_sb: borra_campo_sb,
+                        borrasbdoc: 'borrasbdoc'
+                    },
+                    beforeSend: function () {
+                        $filaArchivo.css('opacity', '0.5');
+                        $('#respuestaser').html('<p style="color:green;">Borrando...</p>');
+                    },
+                    success: function (data) {
+                        var resp = $.trim(data);
+                        if (resp === '' || resp === '0' || resp === 'false') {
+                            $filaArchivo.css('opacity', '1');
+                            $('#respuestaser').html("<span style='color:red;'>Error al borrar el archivo</span>");
+                            return;
+                        }
+                        if ($filaArchivo.length) {
+                            $filaArchivo.fadeOut(300, function () { $(this).remove(); });
+                        }
+                        if (borra_campo_sb !== '') {
+                            $('#' + borra_campo_sb).val('');
+                        }
+                        $('#respuestaser').html("<span style='color:green;font-weight:bold;'>Elemento borrado</span>");
+                    },
+                    error: function() {
+                        $filaArchivo.css('opacity', '1');
+                        $('#respuestaser').html("<span style='color:red;'>Error al borrar el archivo</span>");
+                    }
+                });
+            }
+        });
 		$("#clickPAGOP").click(function(){
 			$.ajax({
 				url:"comprobaciones/controladorPP.php",

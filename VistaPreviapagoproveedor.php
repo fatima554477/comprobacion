@@ -99,6 +99,20 @@ if(!$ejecutivoEncontrado && $ejecutivoActual !== ''){
 }
 $ejecutivoTarjetaSelect .= '</select>';
 
+/* ==============================================================
+   NÚMERO DE EVENTO — mismo buscador que en pagoProveedores
+   ============================================================== */
+$eventosOptions = '<option value="">SELECCIONA UNA OPCIÓN</option>';
+$listadoEventos = $pagoproveedores->listadoEventos();
+if($listadoEventos){
+    while($rowEvento = mysqli_fetch_array($listadoEventos, MYSQLI_ASSOC)){
+        $numeroEvento = $rowEvento["NUMERO_EVENTO"];
+        $nombreEvento = $rowEvento["NOMBRE_EVENTO"];
+        $selectedEvento = ($numeroEvento == $row["NUMERO_EVENTO"]) ? 'selected' : '';
+        $eventosOptions .= '<option value="'.$numeroEvento.'" data-nombre="'.$nombreEvento.'" '.$selectedEvento.'>'.$numeroEvento.'</option>';
+    }
+}
+
 $output .= '<div id="respuestaser"></div>
  <form id="ListadoPAGOPROVEEform">
       <div class="table-responsive">
@@ -255,14 +269,19 @@ if($row["FECHA_DE_LLENADO"]==''){
 <td width="30%" style="font-weight:bold;"><label>RFC DEL PROVEEDOR</label></td>
 <td width="70%"><input type="text" name="RFC_PROVEEDOR" value="'.$row["RFC_PROVEEDOR"].'"></td>
 </tr>
-<tr>
+<tr style="background:#dee9fc">
 <td width="30%" style="font-weight:bold;"><label>No. DE EVENTO</label></td>
-<td width="70%"><input type="text" name="NUMERO_EVENTO" value="'.$row["NUMERO_EVENTO"].'"></td>
+<td width="70%" style="position:relative;">
+<select id="NUMERO_EVENTO_SELECT" name="NUMERO_EVENTO" class="form-control" style="-webkit-appearance:none;-moz-appearance:none;appearance:none;background-color:#ffffff;padding-right:30px;">'.$eventosOptions.'</select>
+<span style="position:absolute;right:20px;top:14px;pointer-events:none;color:#555;font-size:12px;">&#9660;</span>
+<br><a style="color:red;font-size:10px">OBLIGATORIO (BUSCAR)  </a></td>
 </tr>
-<tr>
+<tr style="background:#dee9fc">
 <td width="30%" style="font-weight:bold;"><label>NOMBRE DEL EVENTO</label></td>
-<td width="70%"><input type="text" name="NOMBRE_EVENTO" value="'.$row["NOMBRE_EVENTO"].'"></td>
+<td width="70%"><input type="text" id="NOMBRE_EVENTO_INPUT" name="NOMBRE_EVENTO" value="'.$row["NOMBRE_EVENTO"].'" readonly style="background:#e9ecef;cursor:not-allowed;"></td>
 </tr>
+
+
 <tr>
 <td width="30%" style="font-weight:bold;"><label>FECHA INICIO EVENTO</label></td>
 <td width="70%"><input type="date" name="FECHA_INICIO_EVENTO" value="'.$row["FECHA_INICIO_EVENTO"].'"></td>
@@ -347,6 +366,7 @@ if($row["FECHA_DE_LLENADO"]==''){
         <select name="TIPO_DE_MONEDA" style="background:#daddf5">
             <option value="SELECCIONA UNA OPCIÓN">SELECCIONA UNA OPCIÓN</option>
             <option value="MXN" '.($row["TIPO_DE_MONEDA"]=="MXN"?"selected":"").'>MXN (Peso mexicano)</option>
+			<option value="COP" '.($row["TIPO_DE_MONEDA"]=="COP"?"selected":"").'>COP (Peso colombiano)</option>
             <option value="USD" '.($row["TIPO_DE_MONEDA"]=="USD"?"selected":"").'>USD (Dolar)</option>
             <option value="EUR" '.($row["TIPO_DE_MONEDA"]=="EUR"?"selected":"").'>EUR (Euro)</option>
             <option value="GBP" '.($row["TIPO_DE_MONEDA"]=="GBP"?"selected":"").'>GBP (Libra esterlina)</option>
@@ -580,153 +600,64 @@ window.onload = calcularTotal;
     document.getElementById(id).addEventListener('input', calcularTotal);
 });
 
-
 /* -------------------------------------------------------
-   SUBIDA DE ARCHIVOS — ajax_file_upload2
-   Usa prefijo #3 en los IDs del modal de edición
+   NÚMERO DE EVENTO → autorellena NOMBRE DEL EVENTO
+   (misma lógica que en pagoProveedores)
 ------------------------------------------------------- */
-function ajax_file_upload2(file_obj, nombre) {
-    if (!file_obj) return;
-
-    var form_data = new FormData();
-    form_data.append(nombre, file_obj);
-    form_data.append("IPpagoprovee", $("#IPpagoprovee").val());
-
-    $.ajax({
-        type: 'POST',
-        url: 'comprobaciones/controladorPP.php',
-        dataType: 'html',
-        contentType: false,
-        processData: false,
-        data: form_data,
-        beforeSend: function() {
-            $('#3' + nombre).html('<p style="color:green;"><span class="spinner-border spinner-border-sm"></span>&nbsp;Cargando archivo...</p>');
-            $('#respuestaser').html('<p style="color:green;">Actualizando...</p>');
-        },
-        success: function(response) {
-            var resp = $.trim(response);
-
-            // ── Archivo vacío (0 bytes) ─────────────────────────────────
-            if (resp.indexOf('VACIO^^') === 0) {
-                $('#3' + nombre).html(
-                    '<p style="color:red;font-weight:600;">⚠️ EL ARCHIVO ESTÁ VACÍO (0 KB). ' +
-                    'Verifica que el archivo tenga contenido antes de subirlo.</p>'
-                );
-                $('#' + nombre).val('');
-
-            // ── Sin extensión ───────────────────────────────────────────
-            } else if (resp.indexOf('SIN_EXTENSION^^') === 0) {
-                $('#3' + nombre).html(
-                    '<p style="color:red;font-weight:600;">⚠️ EL ARCHIVO NO TIENE EXTENSIÓN RECONOCIDA. ' +
-                    'Asegúrate de que el nombre termine en .xml, .pdf, .jpg, etc.</p>'
-                );
-                $('#' + nombre).val('');
-
-            // ── Error de subida al servidor ─────────────────────────────
-            } else if (resp.indexOf('ERROR_SUBIDA^^') === 0) {
-                $('#3' + nombre).html(
-                    '<p style="color:red;font-weight:600;">⚠️ ERROR AL RECIBIR EL ARCHIVO EN EL SERVIDOR. ' +
-                    'Puede que sea demasiado grande o que la conexión se interrumpió. Intenta de nuevo.</p>'
-                );
-                $('#' + nombre).val('');
-
-            // ── Error al guardar en disco ───────────────────────────────
-            } else if (resp === '1') {
-                $('#3' + nombre).html(
-                    '<p style="color:red;font-weight:600;">⚠️ ERROR AL GUARDAR EL ARCHIVO EN EL SERVIDOR. ' +
-                    'Intenta de nuevo o contacta a soporte técnico.</p>'
-                );
-                $('#' + nombre).val('');
-
-            // ── Formato no permitido ────────────────────────────────────
-            } else if (resp === '2') {
-                var exts = (nombre === 'ADJUNTAR_FACTURA_XML') ? 'XML' :
-                           (nombre === 'ADJUNTAR_FACTURA_PDF') ? 'PDF' :
-                           'PDF, JPG, PNG, DOCX, XML u otro formato de documento';
-                $('#3' + nombre).html(
-                    '<p style="color:red;">⚠️ FORMATO DE ARCHIVO NO PERMITIDO. ' +
-                    'Este campo acepta únicamente: <strong>' + exts + '</strong>.</p>'
-                );
-                $('#' + nombre).val('');
-
-            // ── UUID duplicado en 07XML o 02XML ─────────────────────────
-            } else if (resp === '3' || resp.indexOf('3|') === 0) {
-                var partesDuplicado = resp.split('|');
-                var idDuplicado = partesDuplicado.length > 1 ? partesDuplicado[1] : '';
-                var numeroEventoDuplicado = partesDuplicado.length > 2 ? partesDuplicado[2] : '';
-
-                var esPagoProveedores = idDuplicado.indexOf('2^^') === 0;
-                if (esPagoProveedores) {
-                    idDuplicado = idDuplicado.replace('2^^', '');
-                    var mensajePago = '⚠️ UUID YA REGISTRADO EN PAGO A PROVEEDORES';
-                    if (idDuplicado !== '') { mensajePago += ' — Solicitud: <strong>' + idDuplicado + '</strong>'; }
-                    if (numeroEventoDuplicado !== '') { mensajePago += ', Evento: <strong>' + numeroEventoDuplicado + '</strong>'; }
-                    $('#3' + nombre).html('<p style="color:#9C2007;font-weight:600;">' + mensajePago + '</p>');
-                } else {
-                    var mensajeDup = '⚠️ UUID PREVIAMENTE CARGADO';
-                    if (idDuplicado !== '') { mensajeDup += ' CON EL ID: ' + idDuplicado + '.'; }
-                    if (numeroEventoDuplicado !== '') { mensajeDup += ' EN EL NÚMERO DE EVENTO: ' + numeroEventoDuplicado + '.'; }
-                    $('#3' + nombre).html('<p style="color:red;font-weight:600;">' + mensajeDup + '</p>');
-                }
-                $('#' + nombre).val('');
-
-            // ── Ya existe un adjunto ────────────────────────────────────
-            } else if (resp === '4') {
-                $('#3' + nombre).html(
-                    '<p style="color:red;">⚠️ Ya existe un archivo adjunto. Primero bórralo para subir uno nuevo.</p>'
-                );
-                $('#' + nombre).val('');
-
-            // ── Formato XML requerido ───────────────────────────────────
-            } else if (resp === 'El archivo debe estar en formato XML.') {
-                $('#3' + nombre).html('<p style="color:red;font-weight:600;">⚠️ ' + resp + '</p>');
-                $('#' + nombre).val('');
-
-            // ── Receptor no válido ──────────────────────────────────────
-            } else if (resp.indexOf('6^^') === 0) {
-                var partesReceptor = resp.split('^^');
-                var receptorOriginal = partesReceptor.length > 1 ? partesReceptor[1] : '';
-                var receptorNorm = (receptorOriginal || '').toString().trim().toUpperCase().replace(/\s+/g, ' ');
-                $('#3' + nombre).html(
-                    '<p style="color:red;font-weight:600;">⚠️ EL RECEPTOR DE LA FACTURA NO ES: EPC, INN, EVE520. ' +
-                    'RECEPTOR DETECTADO: <strong>' + receptorNorm + '</strong></p>'
-                );
-                $('#' + nombre).val('');
-
-            // ── Éxito ───────────────────────────────────────────────────
-            } else {
-                $('#' + nombre).val(response);
-                $('#3' + nombre).html('<p style="color:green;">✅ ¡Archivo cargado con éxito!</p>');
-                $('#respuestaser').html('<p style="color:green;">✅ ¡Actualizado!</p>');
-                $('#reseteaxml').remove();
-            }
-        }
-    });
+function actualizarDatosEvento() {
+    var selectEvento      = document.getElementById('NUMERO_EVENTO_SELECT');
+    var nombreEventoInput = document.getElementById('NOMBRE_EVENTO_INPUT');
+    if (!selectEvento || !nombreEventoInput) return;
+    var opcion = selectEvento.options[selectEvento.selectedIndex];
+    nombreEventoInput.value = opcion ? (opcion.getAttribute('data-nombre') || '') : '';
 }
 
-
 $(document).ready(function(){
+
+    /* --- Evento: cambio de No. de evento --- */
+    $(document)
+        .off('change', '#NUMERO_EVENTO_SELECT')
+        .on('change', '#NUMERO_EVENTO_SELECT', function () {
+            actualizarDatosEvento();
+        });
 
     /* ---------------------------------------------------
        BORRAR ARCHIVO ADJUNTO
     --------------------------------------------------- */
     $(document).on('click', '.view_dataSBborrar2', function () {
         var $boton = $(this);
-        var borra_id_sb = $boton.attr('id');
+               var borra_id_sb = $boton.attr('id') || '';
+        var borra_archivo_sb = $boton.data('archivo') || '';
+        var borra_campo_sb = $boton.data('campo') || '';
         var $filaArchivo = $boton.closest('.fila-archivo');
 
         if (confirm('¿ESTÁS SEGURO DE BORRAR ESTE ARCHIVO?')) {
             $.ajax({
                 url: 'comprobaciones/controladorPP.php',
                 method: 'POST',
-                data: { borra_id_sb: borra_id_sb, borrasbdoc: 'borrasbdoc' },
+                      data: {
+                    borra_id_sb: borra_id_sb,
+                    borra_archivo_sb: borra_archivo_sb,
+                    borra_campo_sb: borra_campo_sb,
+                    borrasbdoc: 'borrasbdoc'
+                },
                 beforeSend: function () {
+					
                     $filaArchivo.css('opacity', '0.5');
                     $('#respuestaser').html('<p style="color:green;">Borrando...</p>');
                 },
                 success: function (data) {
+					 var resp = $.trim(data);
+                    if (resp === '' || resp === '0' || resp === 'false') {
+                        $filaArchivo.css('opacity', '1');
+                        $('#respuestaser').html("<span style='color:red;'>Error al borrar el archivo</span>");
+                        return;
+                    }
                     if ($filaArchivo.length) {
                         $filaArchivo.fadeOut(300, function () { $(this).remove(); });
+                    }
+					  if (borra_campo_sb !== '') {
+                        $('#' + borra_campo_sb).val('');
                     }
                     $('#respuestaser').html("<span style='color:green;font-weight:bold;'>Elemento borrado</span>");
                 },

@@ -184,13 +184,18 @@ public function tarjeta(){
 	public function buscarnumero($filtro){
 		$conn = $this->db();
 		$variable = "select * from 04altaeventos where NUMERO_EVENTO like '%".$filtro."%' ";
-$variablequery = mysqli_query($conn,$variable);
+        $variablequery = mysqli_query($conn,$variable);
 		while($row = mysqli_fetch_array($variablequery, MYSQLI_ASSOC)){
 			$resultado [] = $row['NUMERO_EVENTO'];
 		}
 		return $resultado;
 		
 	}
+	
+	    public function listadoEventos() {
+        $conn = $this->db();
+        return mysqli_query($conn, "SELECT NUMERO_EVENTO, NOMBRE_EVENTO FROM 04altaeventos ORDER BY NUMERO_EVENTO");
+    }
 
 	public function buscarnumero2($filtro){
 		$conn = $this->db();

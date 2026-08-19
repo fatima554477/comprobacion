@@ -3,9 +3,7 @@
  * Propietario: EPC
  * fecha sandor;
  * fecha fatima:23/03/2026
- *
- * PATCH: validaciones de archivo vacío, sin extensión, error de subida
- *        integradas en ajax_file_upload1
+
  */
 ?>
  dataModal3
