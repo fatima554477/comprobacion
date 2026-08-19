@@ -208,8 +208,6 @@ if($search['TIPO_DE_MONEDA']!=""){
 $sWhere2.="  $tables.TIPO_DE_MONEDA LIKE '%".$search['TIPO_DE_MONEDA']."%' AND ";}
 if($search['PFORMADE_PAGO']!=""){
 $sWhere2.="  $tables.PFORMADE_PAGO LIKE '%".$search['PFORMADE_PAGO']."%' AND ";}
-if($search['PorfaltaDeFactura']!=""){
-$sWhere2.="  $tables.PorfaltaDeFactura LIKE '%".$search['PorfaltaDeFactura']."%' AND ";}
 
 
 if($search['FECHA_A_DEPOSITAR_DESDE']!="" && $search['FECHA_A_DEPOSITAR_HASTA']!=""){
@@ -220,7 +218,13 @@ if($search['FECHA_A_DEPOSITAR_DESDE']!="" && $search['FECHA_A_DEPOSITAR_HASTA']!
     $sWhere2.="  $tables.FECHA_A_DEPOSITAR <= '".$search['FECHA_A_DEPOSITAR_HASTA']."' AND ";
 }
 
-
+if($search['PorfaltaDeFactura']!=""){
+$porfaltaf = str_replace(',','',str_replace('$','',$search['PorfaltaDeFactura']));
+$sWhere2.=" (
+    ($tables.STATUS_CHECKBOX IS NULL OR $tables.STATUS_CHECKBOX = 'no')
+    AND ($tables2.UUID IS NULL OR TRIM($tables2.UUID) = '')
+    AND ROUND(COALESCE(NULLIF($tables2.total,0), $tables.MONTO_DEPOSITAR) * 1.46, 2) = '".$porfaltaf."'
+) AND ";}
 
 if($search['STATUS_DE_PAGO']!=""){
 $sWhere2.="  $tables.STATUS_DE_PAGO LIKE '%".$search['STATUS_DE_PAGO']."%' AND ";}
@@ -238,7 +242,14 @@ $ejecutivoTarjetaEscapado = $this->mysqli->real_escape_string($ejecutivoTarjeta)
 $busquedaNombre = "SELECT idRelacion FROM 01informacionpersonal WHERE UPPER(CONCAT_WS(' ', NOMBRE_1, NOMBRE_2, APELLIDO_PATERNO, APELLIDO_MATERNO)) LIKE '%".$ejecutivoTarjetaEscapado."%'";
 
 $sWhere2.="  (UPPER($tables.EJECUTIVOTARJETA) LIKE '%".$ejecutivoTarjetaEscapado."%' OR $tables.EJECUTIVOTARJETA IN (".$busquedaNombre.")) OR ";}
+if(isset($search['ADJUNTAR_FACTURA_XML_VACIO']) 
+   && $search['ADJUNTAR_FACTURA_XML_VACIO'] == "si"){
 
+    $sWhere2 .= " (
+        07XML.UUID IS NULL
+        OR TRIM(07XML.UUID) = ''
+    ) and ";
+}
 if($search['ACTIVO_FIJO']!=""){
 $sWhere2.="  $tables.ACTIVO_FIJO LIKE '%".$search['ACTIVO_FIJO']."%' AND ";}
 if($search['GASTO_FIJO']!=""){
@@ -297,8 +308,9 @@ if($search['metodoDePago']!=""){
 $sWhere2.="  $tables2.metodoDePago = '".$search['metodoDePago']."' AND ";}
 
 if($search['total']!=""){
-$totalf = str_replace(',','',str_replace('$','',$search['total']));
-$sWhere2.="  $tables2.total = '".$totalf."' AND ";}
+    $totalf = str_replace(',','',str_replace('$','',$search['Total']));
+    $sWhere2.=" (COALESCE(NULLIF($tables2.Total,0), $tables.MONTO_DEPOSITAR) = '".$totalf."') AND ";
+}
 
 if($search['serie']!=""){
 $sWhere2.="  $tables2.serie = '".$search['serie']."' AND ";}

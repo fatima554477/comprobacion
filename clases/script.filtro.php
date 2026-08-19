@@ -393,6 +393,8 @@ function LIMPIAR_FILTRO(){
 		var el = document.getElementById(id);
 		if(el){ el.value = ''; }
 	});
+	
+	$("#ADJUNTAR_FACTURA_XML_VACIO").prop("checked", false);
 	load(1);
 }
 
@@ -422,9 +424,11 @@ function load(page){
 	var NOMBRE_EVENTO = getVal("NOMBRE_EVENTO_1");
 	var FECHA_INICIO_EVENTO = $("#FECHA_INICIO_EVENTO").val();
 	var FECHA_FINAL_EVENTO = $("#FECHA_FINAL_EVENTO").val();
+	var PorfaltaDeFactura = $("#PorfaltaDeFactura").val();
 	var MOTIVO_GASTO = getVal("MOTIVO_GASTO_1");
 	var CONCEPTO_PROVEE = getVal("CONCEPTO_PROVEE_1");
 	var MONTO_TOTAL_COTIZACION_ADEUDO = getVal("MONTO_TOTAL_COTIZACION_ADEUDO_1");
+    var ADJUNTAR_FACTURA_XML_VACIO=$("#ADJUNTAR_FACTURA_XML_VACIO").is(":checked") ? 'si' : '';
 	var MONTO_FACTURA = getVal("MONTO_FACTURA_1");
 	var MONTO_PROPINA = getVal("MONTO_PROPINA_1");
 	var MONTO_DEPOSITAR = getVal("MONTO_DEPOSITAR_1");
@@ -483,7 +487,6 @@ function load(page){
 	var TuaTotalCargos = getVal("TuaTotalCargos");
 	var Descuento = getVal("Descuento");
 	var propina = getVal("propina");
-	var PorfaltaDeFactura = getVal("PorfaltaDeFactura");
 	var FECHA_A_DEPOSITAR_DESDE = getVal("FECHA_A_DEPOSITAR_DESDE");
 	var FECHA_A_DEPOSITAR_HASTA = getVal("FECHA_A_DEPOSITAR_HASTA");
 	var per_page = getVal("per_page");
@@ -514,6 +517,7 @@ function load(page){
 		'ADJUNTAR_COTIZACION_1_1': ADJUNTAR_COTIZACION_1_1, 'TIPO_CAMBIOP': TIPO_CAMBIOP,
 		'IVA': IVA, 'TOTAL_ENPESOS': TOTAL_ENPESOS, 'IMPUESTO_HOSPEDAJE': IMPUESTO_HOSPEDAJE,
 		'TImpuestosRetenidosIVA_5': TImpuestosRetenidosIVA,
+		'ADJUNTAR_FACTURA_XML_VACIO':ADJUNTAR_FACTURA_XML_VACIO,
 		'TImpuestosRetenidosISR_5': TImpuestosRetenidosISR,
 		'descuentos_5': descuentos, 'NOMBRE_COMERCIAL': NOMBRE_COMERCIAL,
 		'UUID': UUID, 'metodoDePago': metodoDePago, 'total': total,
@@ -528,7 +532,7 @@ function load(page){
 		'TUA': TUA, 'TuaTotalCargos': TuaTotalCargos, 'Descuento': Descuento,
 		'propina': propina, 'DEPARTAMENTO2': DEPARTAMENTO2
 	};
-
+      window.ultimosParametrosFiltro = $.extend({}, parametros);
 	$.ajax({
 		url: 'comprobaciones/clases/controlador_filtro.php',
 		type: 'POST',
@@ -606,7 +610,25 @@ $(document).on('click', '.view_dataPAGOPROVEEbitacora', function () {
 		error: function () { $('#bitacoraSubLabel').html('id. <b>#' + idSubetufactura + '</b>'); $('#bitacoraPagoBody').html('<div class="alert alert-danger m-3">Error al consultar la bitácora. Intenta nuevamente.</div>'); }
 	});
 });
+function exportarExcelFiltrado(){
+	var parametros = window.ultimosParametrosFiltro || null;
 
+	if(!parametros){
+		load(1);
+		parametros = window.ultimosParametrosFiltro || {};
+	}
+
+	parametros = $.extend({}, parametros, { action: 'exportar_excel', page: 1 });
+
+	// La descarga se realiza en la misma ventana para evitar bloqueos del navegador.
+	var form = $('<form>', { method: 'POST', action: 'comprobaciones/clases/exportar_excel.php', target: '_self' });
+	$.each(parametros, function(key, value){
+		form.append($('<input>', { type: 'hidden', name: key, value: value == null ? '' : value }));
+	});
+	$('body').append(form);
+	form.trigger('submit');
+	form.remove();
+}
 </script>
 <div class="modal fade" id="modalBitacoraPago" tabindex="-1" aria-labelledby="modalBitacoraPagoLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
